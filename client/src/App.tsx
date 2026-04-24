@@ -51,6 +51,7 @@ import {
   FiPlus,
   FiEdit3,
   FiMinus,
+  FiRefreshCw,
 } from "react-icons/fi";
 import { auth, db } from "./firebase";
 import {
@@ -230,7 +231,7 @@ const StatCard = memo(function StatCard({
   icon?: React.ComponentType<{ size?: number }>;
 }) {
   return (
-    <article className={`t-card stat-accent-${accent} p-5 flex flex-col transition-all duration-300 group`}>
+    <article className={`t-card stat-accent-${accent} p-5 h-full flex flex-col transition-all duration-300 group`}>
       <div className="flex items-center gap-4">
         {Icon && (
           <div className={`icon-circle icon-circle-${accent}`}>
@@ -254,9 +255,10 @@ const EventProgressTracker = memo(function EventProgressTracker({ currentPhase }
   const currentIndex = Math.max(0, phases.indexOf(currentPhase));
   
   return (
-    <div className="t-card p-5 w-full overflow-hidden">
+    <div className="t-card p-4 sm:p-5 w-full h-full overflow-hidden flex flex-col">
       <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Event Progress Tracker</h2>
-      <div className="flex items-center justify-between min-w-[300px]">
+      <div className="overflow-hidden pb-1">
+      <div className="flex w-full items-center justify-between gap-2">
         {phases.map((phase, index) => {
           const isCompleted = index < currentIndex;
           const isCurrent = index === currentIndex;
@@ -272,7 +274,7 @@ const EventProgressTracker = memo(function EventProgressTracker({ currentPhase }
               }}>
                 {isCompleted ? <FiCheck size={14} /> : <span className="text-xs font-bold">{index + 1}</span>}
               </div>
-              <p className={`mt-2 text-[10px] sm:text-xs font-medium capitalize text-center`} style={{
+              <p className={`mt-2 px-1 text-[9px] sm:text-xs leading-tight font-medium capitalize text-center`} style={{
                 color: isCompleted || isCurrent ? 'var(--text-primary)' : 'var(--text-muted)'
               }}>{phase}</p>
               {index < phases.length - 1 && (
@@ -285,6 +287,7 @@ const EventProgressTracker = memo(function EventProgressTracker({ currentPhase }
           );
         })}
       </div>
+      </div>
     </div>
   );
 });
@@ -295,9 +298,9 @@ const CircularProgress = memo(function CircularProgress({ percentage, label }: {
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
   
   return (
-    <div className="t-card p-6 flex flex-col items-center justify-center">
+    <div className="t-card p-4 sm:p-6 flex flex-col items-center justify-center">
       <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider self-start" style={{ color: 'var(--text-secondary)' }}>{label}</h2>
-      <div className="relative w-32 h-32">
+      <div className="relative w-28 h-28 sm:w-32 sm:h-32">
         <svg className="w-full h-full" viewBox="0 0 120 120">
           <circle cx="60" cy="60" r={radius} fill="none" stroke="var(--border-main)" strokeWidth="8" />
           <circle
@@ -312,7 +315,7 @@ const CircularProgress = memo(function CircularProgress({ percentage, label }: {
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{percentage}%</span>
+          <span className="text-2xl sm:text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{percentage}%</span>
         </div>
       </div>
       <p className="mt-3 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Complete</p>
@@ -403,7 +406,7 @@ const ActivityFeed = memo(function ActivityFeed({
   freshIds: Set<string>;
 }) {
   return (
-    <article className="t-card p-5">
+    <article className="t-card p-5 h-full flex flex-col">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
           <div className="icon-circle icon-circle-green" style={{ width: 32, height: 32 }}>
@@ -467,10 +470,10 @@ const GalleryPanel = memo(function GalleryPanel({ items }: { items: GalleryItem[
   const isDriveEmbed = embedUrl.includes("drive.google.com");
 
   return (
-    <article className="t-card flex flex-col md:flex-row min-h-[600px] overflow-hidden">
+    <article className="t-card flex flex-col md:flex-row min-h-[420px] md:min-h-[600px] overflow-hidden">
       
       {/* Side selection list */}
-      <div className="w-full md:w-1/3 p-5 lg:p-6 flex flex-col max-h-[400px] md:max-h-none overflow-y-auto" style={{ background: 'var(--bg-card-alt)', borderRight: '1px solid var(--border-main)' }}>
+      <div className="w-full md:w-1/3 p-4 sm:p-5 lg:p-6 flex flex-col max-h-[280px] sm:max-h-[360px] md:max-h-none overflow-y-auto" style={{ background: 'var(--bg-card-alt)', borderRight: '1px solid var(--border-main)' }}>
         <h2 className="flex items-center gap-2 text-xl font-bold mb-6" style={{ color: 'var(--text-primary)' }}>
           <div className="icon-circle icon-circle-green">
              <FiImage size={16} />
@@ -493,7 +496,7 @@ const GalleryPanel = memo(function GalleryPanel({ items }: { items: GalleryItem[
               }}
             >
               <div 
-                className="w-12 h-12 flex items-center justify-center flex-shrink-0 font-black text-xl text-black border-2 border-white shadow-[4px_4px_0px_white]"
+                className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center flex-shrink-0 font-black text-base sm:text-xl text-black border-2 border-white shadow-[4px_4px_0px_white]"
                 style={{ background: ['var(--accent-green)', 'var(--accent-purple)', 'var(--accent-blue)', 'var(--accent-orange)'][index % 4] }}
               >
                 {index + 1}
@@ -516,8 +519,8 @@ const GalleryPanel = memo(function GalleryPanel({ items }: { items: GalleryItem[
       </div>
 
       {/* Main Viewport */}
-      <div className="w-full md:w-2/3 p-5 lg:p-6 flex flex-col" style={{ background: 'var(--bg-card)' }}>
-        <div className="w-full h-full min-h-[400px] md:min-h-[550px] overflow-hidden flex items-center justify-center relative" style={{ background: 'var(--bg-inset)', border: '1px solid var(--border-main)', borderRadius: 'var(--card-radius)' }}>
+      <div className="w-full md:w-2/3 p-4 sm:p-5 lg:p-6 flex flex-col" style={{ background: 'var(--bg-card)' }}>
+        <div className="w-full h-full min-h-[320px] md:min-h-[550px] overflow-hidden flex items-center justify-center relative" style={{ background: 'var(--bg-inset)', border: '1px solid var(--border-main)', borderRadius: 'var(--card-radius)' }}>
           {embedUrl ? (
             isDriveEmbed ? (
               <div className="absolute inset-0 overflow-hidden" style={{ borderRadius: 'var(--card-radius)' }}>
@@ -530,15 +533,15 @@ const GalleryPanel = memo(function GalleryPanel({ items }: { items: GalleryItem[
                 ></iframe>
               </div>
             ) : (
-              <div className="w-full h-full flex items-center justify-center p-12 transition-all animate-fade-in">
+              <div className="w-full h-full flex items-center justify-center p-5 sm:p-12 transition-all animate-fade-in">
                 <div 
                   className="w-full max-w-sm aspect-square flex flex-col items-center justify-center border-[8px] border-white shadow-[12px_12px_0px_rgba(255,255,255,1)]"
                   style={{ 
                     background: ['var(--accent-green)', 'var(--accent-purple)', 'var(--accent-blue)', 'var(--accent-orange)'][slideIndex % 4],
                   }}
                 >
-                  <span className="text-[12rem] font-black text-black leading-none">{slideIndex + 1}</span>
-                  <p className="mt-4 text-xl font-bold uppercase tracking-widest text-black bg-white px-4 py-1">Collection_0{slideIndex + 1}</p>
+                  <span className="text-8xl sm:text-[12rem] font-black text-black leading-none">{slideIndex + 1}</span>
+                  <p className="mt-4 text-xs sm:text-xl font-bold uppercase tracking-widest text-black bg-white px-3 py-1 text-center">Collection_0{slideIndex + 1}</p>
                 </div>
               </div>
             )
@@ -570,24 +573,26 @@ const Leaderboard = memo(function Leaderboard({
   const rest = teams.slice(3, 10);
 
   return (
-    <div className="w-full">
-      <article className="t-card p-6 w-full md:p-8">
-        <div className="mb-8 flex items-center justify-between pb-4" style={{ borderBottom: '1px solid var(--border-main)' }}>
-          <h2 className="flex items-center gap-2 text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
-            <div className="icon-circle icon-circle-purple" style={{ width: 36, height: 36 }}>
-              <FiAward size={18} />
+    <div className="w-full h-full">
+      <article className="t-card p-4 sm:p-6 w-full md:p-8 h-full flex flex-col">
+        <div className="mb-6 flex items-center justify-between gap-2 pb-4" style={{ borderBottom: '1px solid var(--border-main)' }}>
+          <h2 className="flex items-center gap-2 text-lg font-bold truncate" style={{ color: 'var(--text-primary)' }}>
+            <div className="icon-circle icon-circle-purple" style={{ width: 30, height: 30 }}>
+              <FiAward size={15} />
             </div>
             Leaderboard
           </h2>
-          <p className="text-sm font-medium px-3 py-1 rounded-full" style={{ background: 'var(--accent-purple-dim)', color: 'var(--accent-purple)' }}>Top 10 Teams</p>
+          <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md whitespace-nowrap" style={{ background: 'var(--accent-purple-dim)', color: 'var(--accent-purple)', border: '1px solid rgba(168,85,247,0.3)' }}>
+            Top 10
+          </span>
         </div>
 
         {teams.length > 0 ? (
           <>
-            <div className="flex justify-center items-end gap-2 md:gap-4 mb-10 pt-8 px-2">
+            <div className="flex justify-center items-end gap-2 md:gap-4 mb-8 pt-6 px-2 overflow-x-auto">
               {/* 2nd Place */}
               {second && (
-                <div className="flex flex-col items-center w-24 md:w-32 animate-fade-in" style={{ animationDelay: '100ms' }}>
+                <div className="flex flex-col items-center min-w-[88px] w-24 md:w-32 animate-fade-in" style={{ animationDelay: '100ms' }}>
                   <span className="text-3xl font-black mb-2" style={{ color: 'var(--text-muted)' }}>2</span>
                   <div className="w-full h-24 flex items-start justify-center pt-3 relative overflow-hidden" style={{ background: 'var(--bg-card-alt)', border: '1px solid var(--border-main)', borderRadius: 'var(--card-radius) var(--card-radius) 0 0' }}>
                     <span className="font-bold text-xs md:text-sm text-center px-1 z-10 w-full truncate" style={{ color: 'var(--text-secondary)' }}>{second.name}</span>
@@ -597,7 +602,7 @@ const Leaderboard = memo(function Leaderboard({
               )}
               {/* 1st Place */}
               {first && (
-                <div className="flex flex-col items-center w-28 md:w-36 z-20 animate-fade-in" style={{ transform: 'scale(1.05)' }}>
+                <div className="flex flex-col items-center min-w-[100px] w-28 md:w-36 z-20 animate-fade-in" style={{ transform: 'scale(1.05)' }}>
                   <div className="text-4xl mb-1">👑</div>
                   <span className="text-4xl font-black mb-2" style={{ color: 'var(--accent-green)', textShadow: '0 0 20px var(--accent-green-dim)' }}>1</span>
                   <div className="w-full h-32 flex items-start justify-center pt-3 relative overflow-hidden" style={{ background: 'var(--accent-green-dim)', border: '2px solid var(--accent-green)', borderRadius: 'var(--card-radius) var(--card-radius) 0 0' }}>
@@ -608,7 +613,7 @@ const Leaderboard = memo(function Leaderboard({
               )}
               {/* 3rd Place */}
               {third && (
-                <div className="flex flex-col items-center w-24 md:w-32 animate-fade-in" style={{ animationDelay: '200ms' }}>
+                <div className="flex flex-col items-center min-w-[88px] w-24 md:w-32 animate-fade-in" style={{ animationDelay: '200ms' }}>
                   <span className="text-2xl font-black mb-2" style={{ color: 'var(--accent-orange)' }}>3</span>
                   <div className="w-full h-20 flex items-start justify-center pt-2 relative overflow-hidden" style={{ background: 'var(--bg-card-alt)', border: '1px solid var(--border-main)', borderRadius: 'var(--card-radius) var(--card-radius) 0 0' }}>
                     <span className="font-bold text-xs md:text-sm text-center px-1 z-10 w-full truncate" style={{ color: 'var(--text-secondary)' }}>{third.name}</span>
@@ -719,7 +724,7 @@ const CountdownTimer = memo(function CountdownTimer({
 
   return (
     <article className="t-card p-5">
-      <div className="mb-2 flex items-center justify-between">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <h2 className="flex items-center gap-2 text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
           <div className="icon-circle icon-circle-cyan" style={{ width: 32, height: 32 }}>
             <FiClock size={15} />
@@ -732,7 +737,7 @@ const CountdownTimer = memo(function CountdownTimer({
       {event ? (
         <>
           <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{event.title}</p>
-          <p className="mt-2 text-4xl font-bold tracking-tight" style={{ color: 'var(--accent-green)', textShadow: '0 0 20px var(--accent-green-dim)' }}>{formatRemaining(totalSeconds)}</p>
+          <p className="mt-2 text-3xl sm:text-4xl font-bold tracking-tight" style={{ color: 'var(--accent-green)', textShadow: '0 0 20px var(--accent-green-dim)' }}>{formatRemaining(totalSeconds)}</p>
         </>
       ) : (
         <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No upcoming event found.</p>
@@ -752,11 +757,11 @@ const HackathonClockCard = memo(function HackathonClockCard({ startTime }: { sta
   const isLive = endMs && nowMs < endMs;
 
   return (
-    <article className="t-card p-5 flex flex-col items-center justify-center min-h-[140px] relative overflow-hidden" style={{ border: '2px solid var(--accent-green)', background: 'var(--accent-green-dim)' }}>
-      <div className="absolute top-2 left-2 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest bg-black text-[#00ff66]">Hackathon_Master_Clock</div>
+    <article className="t-card p-5 flex flex-col items-center justify-center h-full relative overflow-hidden" style={{ border: '2px solid var(--accent-green)', background: 'var(--accent-green-dim)' }}>
+      <div className="absolute top-2 left-2 px-2 py-0.5 text-[9px] sm:text-[10px] font-black uppercase tracking-widest bg-black text-[#00ff66]">Hackathon_Master_Clock</div>
       {isLive ? (
         <>
-          <p className="text-4xl md:text-5xl font-black font-mono tracking-tighter" style={{ color: 'var(--text-primary)' }}>
+          <p className="text-3xl sm:text-4xl md:text-5xl font-black font-mono tracking-tighter" style={{ color: 'var(--text-primary)' }}>
             {formatRemaining(Math.floor((endMs - nowMs) / 1000))}
           </p>
           <p className="mt-2 text-xs font-bold uppercase tracking-widest animate-pulse" style={{ color: 'var(--accent-green)' }}>Time Remaining</p>
@@ -1055,31 +1060,37 @@ function App() {
   const [projectorSlide, setProjectorSlide] = useState(0);
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [activeTab, setActiveTab] = useState("Dashboard");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
+  const [isMobileView, setIsMobileView] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mediaQuery = window.matchMedia("(max-width: 767px)");
+    const apply = () => setIsMobileView(mediaQuery.matches);
+    apply();
+    mediaQuery.addEventListener("change", apply);
+    return () => mediaQuery.removeEventListener("change", apply);
+  }, []);
+
+  const showNotification = useCallback((message: string, type: 'success' | 'info' | 'error' = 'success') => {
+    setNotification({ message, type });
+    // Clear previous timeout if exists
+    if ((window as any).notificationTimeout) clearTimeout((window as any).notificationTimeout);
+    (window as any).notificationTimeout = setTimeout(() => setNotification(null), 3500);
+  }, []);
 
   // ============ TILE GRID STATE ============
-  const [tiles, setTiles] = useState<TileConfig[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("dashboard-tiles");
-      if (saved) {
-        try { return JSON.parse(saved); } catch { /* fall through */ }
-      }
-    }
-    return DEFAULT_TILES;
-  });
+  const [tiles, setTiles] = useState<TileConfig[]>(DEFAULT_TILES);
   const [editMode, setEditMode] = useState(false);
   const [showAddTilePanel, setShowAddTilePanel] = useState(false);
-  const [draggedTileId, setDraggedTileId] = useState<string | null>(null);
-  const [dragOverTileId, setDragOverTileId] = useState<string | null>(null);
   const [removingTileId, setRemovingTileId] = useState<string | null>(null);
 
-  // Persist tile layout
   useEffect(() => {
     localStorage.setItem("dashboard-tiles", JSON.stringify(tiles));
-    // Also persist to Firestore if admin
-    if (isAdmin) {
-      setDoc(doc(db, "dashboardLayout", "config"), { tiles, lastUpdated: serverTimestamp() }, { merge: true }).catch(() => {});
-    }
-  }, [tiles, isAdmin]);
+    // Automatic cloud saving is removed to prevent feedback loops.
+    // Saving now happens explicitly via "Reset Layout" or "Save Layout" actions.
+  }, [tiles]);
 
   // Load layout from Firestore on mount
   useEffect(() => {
@@ -1087,11 +1098,17 @@ function App() {
       if (snap.exists()) {
         const data = snap.data();
         if (data.tiles && Array.isArray(data.tiles)) {
-          setTiles(data.tiles);
-          localStorage.setItem("dashboard-tiles", JSON.stringify(data.tiles));
+          // IMPORTANT: If we are an admin and currently editing, DO NOT let the cloud 
+          // overwrite our local changes. Otherwise, overwrite the state.
+          if (!editMode) {
+            setTiles(data.tiles);
+            localStorage.setItem("dashboard-tiles", JSON.stringify(data.tiles));
+          }
         }
       }
-    }, () => {});
+    }, (err) => {
+      console.error("Layout sync error:", err);
+    });
     return () => unsub();
   }, []);
 
@@ -1100,8 +1117,9 @@ function App() {
     setTimeout(() => {
       setTiles(prev => prev.filter(t => t.id !== tileId));
       setRemovingTileId(null);
+      showNotification("Tile removed from dashboard", "info");
     }, 350);
-  }, []);
+  }, [showNotification]);
 
   const handleAddTile = useCallback((type: TileType, defaultSize: TileSize) => {
     const newTile: TileConfig = {
@@ -1113,41 +1131,9 @@ function App() {
     };
     setTiles(prev => [...prev, newTile]);
     setShowAddTilePanel(false);
-  }, [tiles.length]);
+    showNotification(`${type.replace(/([A-Z])/g, ' $1').trim()} added to dashboard!`);
+  }, [tiles.length, showNotification]);
 
-  const handleResizeTile = useCallback((tileId: string) => {
-    setTiles(prev => prev.map(t => {
-      if (t.id !== tileId) return t;
-      const sizes: TileSize[] = ["sm", "md", "lg"];
-      const nextIdx = (sizes.indexOf(t.size) + 1) % sizes.length;
-      return { ...t, size: sizes[nextIdx] };
-    }));
-  }, []);
-
-  const handleDragStart = useCallback((tileId: string) => {
-    setDraggedTileId(tileId);
-  }, []);
-
-  const handleDragOver = useCallback((e: React.DragEvent, tileId: string) => {
-    e.preventDefault();
-    setDragOverTileId(tileId);
-  }, []);
-
-  const handleDragEnd = useCallback(() => {
-    if (draggedTileId && dragOverTileId && draggedTileId !== dragOverTileId) {
-      setTiles(prev => {
-        const fromIdx = prev.findIndex(t => t.id === draggedTileId);
-        const toIdx = prev.findIndex(t => t.id === dragOverTileId);
-        if (fromIdx === -1 || toIdx === -1) return prev;
-        const next = [...prev];
-        const [moved] = next.splice(fromIdx, 1);
-        next.splice(toIdx, 0, moved);
-        return next.map((t, i) => ({ ...t, order: i }));
-      });
-    }
-    setDraggedTileId(null);
-    setDragOverTileId(null);
-  }, [draggedTileId, dragOverTileId]);
 
   const [theme, setTheme] = useState<"default" | "brutalist">(() => {
     if (typeof window !== "undefined") {
@@ -1176,6 +1162,12 @@ function App() {
     }
     return tabs;
   }, [isAdmin]);
+
+  useEffect(() => {
+    if (isMobileView && projectorMode) {
+      setProjectorMode(false);
+    }
+  }, [isMobileView, projectorMode]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -1782,7 +1774,7 @@ function App() {
         return <HackathonClockCard startTime={resolvedStats.hackathonStartTime} />;
       case "stats":
         return (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 h-full">
             <StatCard title="Total Students" value={resolvedStats.totalParticipants} accent="green" icon={FiUsers} />
             <StatCard title="Total Teams" value={resolvedStats.teamsRegistered} accent="purple" icon={FiTarget} />
             <StatCard title="Prize Pool" value={resolvedStats.prizePool} prefix="₹" accent="orange" icon={FiGift} />
@@ -1809,7 +1801,7 @@ function App() {
       case "circularProgress":
         return <CircularProgress percentage={completionPercentage} label="Hackathon Progress" />;
       case "leaderboard":
-        return <Leaderboard teams={leaderboardTeams} trendingIds={trendingTeamIds} />;
+        return <Leaderboard teams={leaderboardTeams.filter(t => !searchQuery || t.name.toLowerCase().includes(searchQuery.toLowerCase()))} trendingIds={trendingTeamIds} />;
       case "announcements":
         return (
           <article className="t-card p-5 h-full">
@@ -1820,7 +1812,7 @@ function App() {
               Announcements
             </h2>
             <div className="space-y-2">
-              {state.announcements.slice(0, 4).map((item) => (
+              {state.announcements.filter(a => !searchQuery || a.message.toLowerCase().includes(searchQuery.toLowerCase()) || a.type.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 4).map((item) => (
                 <div key={item.id} className="t-inset p-3" style={{ borderRadius: 'var(--card-radius)' }}>
                   <p className="text-sm" style={{ color: 'var(--text-primary)' }}>{item.message}</p>
                   <p className="mt-1 text-[11px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{item.type}</p>
@@ -1840,7 +1832,7 @@ function App() {
               Today's Schedule
             </h2>
             <div className="space-y-2">
-              {state.schedule.slice(0, 5).map((item) => (
+              {state.schedule.filter(s => !searchQuery || s.title.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 5).map((item) => (
                 <div key={item.id} className="flex items-center justify-between t-inset p-3" style={{ borderRadius: 'var(--card-radius)' }}>
                   <div className="flex items-center gap-3">
                     <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: item.status === 'live' ? 'var(--accent-green)' : item.status === 'completed' ? 'var(--text-muted)' : 'var(--accent-blue)', boxShadow: item.status === 'live' ? '0 0 8px var(--accent-green)' : 'none' }}></div>
@@ -1952,10 +1944,10 @@ function App() {
 
 
   return (
-    <div className="min-h-screen w-full p-2 md:p-4 pb-28 md:pb-36 relative transition-colors duration-300" style={{ background: 'var(--bg-app)', color: 'var(--text-primary)' }}>
+    <div className="min-h-screen w-full overflow-x-hidden p-2 md:p-4 pb-32 md:pb-36 relative transition-colors duration-300" style={{ background: 'var(--bg-app)', color: 'var(--text-primary)' }}>
       {/* Floating Bottom Navigation Island */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] pointer-events-none w-full flex justify-center px-4 animate-fade-in">
-        <nav className="flex items-center gap-1 md:gap-2 p-2 backdrop-blur-xl shadow-[0_20px_60px_-10px_rgba(0,0,0,0.4)] rounded-full pointer-events-auto transition-all" style={{ background: 'var(--nav-bg)', border: '1px solid var(--nav-border)' }}>
+      <div className="fixed left-1/2 -translate-x-1/2 bottom-[max(0.75rem,env(safe-area-inset-bottom))] sm:bottom-6 z-[9999] pointer-events-none w-[calc(100%-1rem)] sm:w-full max-w-[460px] sm:max-w-none flex justify-center px-0 sm:px-4 animate-fade-in">
+        <nav className="flex w-full items-stretch justify-between gap-1 sm:gap-2 p-1.5 sm:p-2 backdrop-blur-xl shadow-[0_20px_60px_-10px_rgba(0,0,0,0.4)] rounded-full pointer-events-auto transition-all" style={{ background: 'var(--nav-bg)', border: '1px solid var(--nav-border)' }}>
           {availableTabs.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.label;
@@ -1963,15 +1955,14 @@ function App() {
               <button
                 key={item.label}
                 onClick={() => setActiveTab(item.label)}
-                className="group flex items-center justify-center rounded-full px-4 py-2.5 sm:py-3 sm:px-5 text-sm font-semibold transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] flex-shrink-0"
+                className="group flex flex-1 sm:flex-none min-w-0 items-center justify-center rounded-full px-2 py-3 sm:py-3 sm:px-5 text-sm font-semibold transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
                 style={{
                   background: isActive ? 'var(--nav-active)' : 'transparent',
                   color: isActive ? '#000' : 'var(--text-secondary)',
                   boxShadow: isActive ? '0 8px 25px rgba(45,224,143,0.3)' : 'none',
-                  transform: isActive ? 'scale(1.05)' : 'scale(1)',
                 }}
               >
-                <Icon className={`text-lg transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
+                <Icon className={`text-xl sm:text-lg transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
                 <span className={`transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] overflow-hidden whitespace-nowrap hidden sm:block ${isActive ? 'max-w-[150px] opacity-100 ml-2' : 'max-w-0 opacity-0 ml-0 group-hover:max-w-[150px] group-hover:opacity-100 group-hover:ml-2'}`}>
                   {item.label}
                 </span>
@@ -1982,18 +1973,20 @@ function App() {
       </div>
 
       <div className="mx-auto w-full max-w-full p-1 md:p-2 relative">
-        <main className="t-surface p-4 md:p-6 w-full">
+        <main className="t-surface p-3 sm:p-4 md:p-6 w-full">
           <header className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="relative w-full lg:max-w-xl">
               <FiSearch className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
               <input
                 placeholder="Search teams, tracks, announcements"
                 className="w-full t-input px-11 py-3 text-sm"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
 
-            <div className="flex items-center gap-3 self-end lg:self-auto">
-              {isAdmin && (
+            <div className="flex w-full lg:w-auto items-center gap-2 sm:gap-3 justify-end lg:justify-start flex-wrap">
+              {isAdmin && !isMobileView && (
                 <button
                   type="button"
                   onClick={() => { void toggleProjectorMode(); }}
@@ -2003,6 +1996,55 @@ function App() {
                   <FiMonitor />
                   Projector
                 </button>
+              )}
+              {isAdmin && editMode && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (window.confirm("Reset to default structured layout for ALL users? This will overwrite the current cloud configuration.")) {
+                        setTiles(DEFAULT_TILES);
+                        if (isAdmin) {
+                          try {
+                            await setDoc(doc(db, "dashboardLayout", "config"), { 
+                              tiles: DEFAULT_TILES, 
+                              lastUpdated: serverTimestamp() 
+                            });
+                            alert("Layout Reset and Synced to Cloud Successfully!");
+                          } catch (err: any) {
+                            alert("Sync Failed: " + err.message);
+                          }
+                        }
+                      }
+                    }}
+                    className="inline-flex h-11 items-center gap-2 px-4 text-sm font-semibold transition-all t-card rounded-full"
+                    style={{ color: 'var(--accent-orange)' }}
+                    title="Reset to default layout"
+                  >
+                    <FiRefreshCw />
+                    Reset Layout
+                  </button>
+              )}
+              {isAdmin && editMode && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        await setDoc(doc(db, "dashboardLayout", "config"), { 
+                          tiles, 
+                          lastUpdated: serverTimestamp() 
+                        });
+                        alert("Custom Layout Synced to Cloud Successfully!");
+                      } catch (err: any) {
+                        alert("Sync Failed: " + err.message);
+                      }
+                    }}
+                    className="inline-flex h-11 items-center gap-2 px-4 text-sm font-semibold transition-all t-card rounded-full"
+                    style={{ color: 'var(--accent-green)' }}
+                    title="Save current layout to cloud"
+                  >
+                    <FiZap />
+                    Save to Cloud
+                  </button>
               )}
               {isAdmin && (
                 <button
@@ -2040,7 +2082,7 @@ function App() {
               >
                 <FiEye />
               </button>
-              <div className="flex items-center gap-3 px-3 py-1.5 t-card rounded-full">
+              <div className="hidden sm:flex items-center gap-3 px-3 py-1.5 t-card rounded-full max-w-full">
                 <img
                   src="https://i.pravatar.cc/80?img=12"
                   alt="Profile"
@@ -2056,7 +2098,7 @@ function App() {
           </header>
 
           {activeTab === "Admin Controls" && isAdmin ? (
-            <AdminControlsPage state={state} />
+            <AdminControlsPage state={state} showNotification={showNotification} />
           ) : activeTab === "Scoring" && isAdmin ? (
             <section className="animate-fade-in mt-2 flex-1">
               <div className="mb-6">
@@ -2064,7 +2106,7 @@ function App() {
                 <p className="mt-1 text-sm" style={{ color: 'var(--text-secondary)' }}>Award and modify points for competing teams.</p>
               </div>
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {state.teams.map((t) => (
+                {state.teams.filter(t => !searchQuery || t.name.toLowerCase().includes(searchQuery.toLowerCase()) || t.department.toLowerCase().includes(searchQuery.toLowerCase())).map((t) => (
                   <article key={t.id} className="t-card p-5 flex flex-col gap-3">
                     <div className="flex items-center gap-3">
                       <div className="icon-circle icon-circle-green" style={{ width: 40, height: 40 }}>
@@ -2091,6 +2133,7 @@ function App() {
                         timestamp: serverTimestamp(),
                       });
                       inputEl.value = "";
+                      showNotification(`Updated score for ${t.name}!`);
                     }}>
                       <input type="number" name="pts" placeholder="+/- Points" required className="flex-1 t-input px-3 py-2 text-sm text-center font-semibold" />
                       <button type="submit" className="px-4 py-2 text-sm font-bold text-black" style={{ background: 'var(--accent-green)', borderRadius: 'var(--card-radius)' }}>Apply</button>
@@ -2106,7 +2149,7 @@ function App() {
             </section>
           ) : activeTab === "Gallery" ? (
             <section className="animate-fade-in mt-2 flex-1">
-              <div className="mb-4 flex items-center justify-between">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h1 className="text-3xl font-semibold tracking-tight md:text-4xl" style={{ color: 'var(--text-primary)' }}>Event Gallery</h1>
                   <p className="mt-1 text-sm" style={{ color: 'var(--text-secondary)' }}>View all visuals from the hackathon.</p>
@@ -2143,16 +2186,13 @@ function App() {
 
           {/* ============ DYNAMIC TILE GRID ============ */}
           <div className="tile-grid">
-            {tiles.filter(t => t.visible).map((tile) => (
+            {[...tiles].filter(t => t.visible).sort((a, b) => (a.order || 0) - (b.order || 0)).map((tile) => (
               <div
                 key={tile.id}
-                className={`tile-wrapper tile-${tile.size} ${draggedTileId === tile.id ? 'tile-dragging' : ''} ${dragOverTileId === tile.id ? 'tile-drag-over' : ''} ${removingTileId === tile.id ? 'tile-removing' : 'tile-entering'}`}
-                draggable={editMode}
-                onDragStart={() => handleDragStart(tile.id)}
-                onDragOver={(e) => handleDragOver(e, tile.id)}
-                onDragEnd={handleDragEnd}
-                onDragLeave={() => setDragOverTileId(null)}
+                className={`tile-wrapper tile-${tile.size} ${removingTileId === tile.id ? 'tile-removing' : 'tile-entering'}`}
               >
+                {renderTileContent(tile)}
+
                 {/* Delete button - only in edit mode */}
                 {editMode && (
                   <button
@@ -2165,21 +2205,6 @@ function App() {
                   </button>
                 )}
 
-                {/* Resize handle - only in edit mode */}
-                {editMode && (
-                  <button
-                    type="button"
-                    className="tile-resize-handle"
-                    onClick={(e) => { e.stopPropagation(); handleResizeTile(tile.id); }}
-                    title={`Size: ${tile.size.toUpperCase()} — Click to cycle`}
-                  >
-                    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M14 2L2 14M14 6L6 14M14 10L10 14" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" />
-                    </svg>
-                  </button>
-                )}
-
-                {renderTileContent(tile)}
               </div>
             ))}
           </div>
@@ -2189,7 +2214,7 @@ function App() {
             <button
               type="button"
               onClick={() => setShowAddTilePanel(prev => !prev)}
-              className="fixed bottom-28 right-8 z-[999] flex items-center gap-2 px-5 py-3 text-sm font-black uppercase tracking-wider text-black transition-all animate-fade-in"
+              className="fixed bottom-24 sm:bottom-28 right-4 sm:right-8 z-[999] flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-black uppercase tracking-wider text-black transition-all animate-fade-in"
               style={{
                 background: 'var(--accent-green)',
                 border: '3px solid #fff',
@@ -2205,7 +2230,7 @@ function App() {
           {showAddTilePanel && (
             <div className="fixed inset-0 z-[9998]" onClick={() => setShowAddTilePanel(false)}>
               <div
-                className="absolute right-0 top-0 h-full w-full max-w-md p-6 overflow-y-auto add-tile-panel-enter"
+                className="absolute right-0 top-0 h-full w-full max-w-md p-4 sm:p-6 overflow-y-auto add-tile-panel-enter"
                 style={{ background: 'var(--bg-surface)', borderLeft: '4px solid var(--accent-green)' }}
                 onClick={(e) => e.stopPropagation()}
               >
@@ -2218,7 +2243,12 @@ function App() {
                   </button>
                 </div>
                 <div className="space-y-3">
-                  {TILE_TEMPLATES.map((tmpl) => (
+                  {TILE_TEMPLATES.filter(tmpl => !tiles.some(t => t.type === tmpl.type)).length === 0 && (
+                    <div className="text-center py-10 t-inset" style={{ borderRadius: 'var(--card-radius)' }}>
+                      <p className="text-sm" style={{ color: 'var(--text-muted)' }}>All available tiles are already on your dashboard.</p>
+                    </div>
+                  )}
+                  {TILE_TEMPLATES.filter(tmpl => !tiles.some(t => t.type === tmpl.type)).map((tmpl) => (
                     <button
                       key={tmpl.type}
                       type="button"
@@ -2244,7 +2274,7 @@ function App() {
 
       {showAdminModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'var(--modal-overlay)' }}>
-          <div className="relative w-full max-w-md">
+          <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setShowAdminModal(false)}
               className="absolute -right-2 -top-2 z-10 grid h-8 w-8 place-items-center rounded-full shadow transition t-card"
@@ -2266,6 +2296,20 @@ function App() {
         </div>
       )}
 
+
+      {/* ============ GLOBAL NOTIFICATION TOAST ============ */}
+      {notification && (
+        <div 
+          className="fixed bottom-24 sm:bottom-10 left-1/2 -translate-x-1/2 z-[10000] w-[calc(100%-1rem)] sm:w-auto max-w-[95vw] px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-3 border-[3px] border-black shadow-[8px_8px_0px_#000] animate-slide-up"
+          style={{ 
+            background: notification.type === 'success' ? 'var(--accent-green)' : notification.type === 'error' ? '#ef4444' : 'var(--accent-blue)',
+            color: notification.type === 'success' || notification.type === 'info' ? '#000' : '#fff'
+          }}
+        >
+          {notification.type === 'success' ? <FiCheck size={20} strokeWidth={3} /> : <FiZap size={20} />}
+          <span className="font-black uppercase tracking-widest text-xs sm:text-sm break-words">{notification.message}</span>
+        </div>
+      )}
     </div>
   );
 }

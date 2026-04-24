@@ -102,10 +102,10 @@ export const ProblemStatementsTile = memo(function ProblemStatementsTile() {
 
       {/* Detail Modal */}
       {selected && (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 backdrop-blur-md" style={{ background: 'rgba(0,0,0,0.85)' }} onClick={() => setSelected(null)}>
-          <div className="max-w-lg w-full p-8 border-[6px] border-white shadow-[12px_12px_0px_var(--accent-purple)]" style={{ background: 'var(--bg-card)' }} onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-4 backdrop-blur-md" style={{ background: 'rgba(0,0,0,0.85)' }} onClick={() => setSelected(null)}>
+          <div className="max-w-lg w-full max-h-[88vh] overflow-y-auto p-4 sm:p-8 border-[6px] border-white shadow-[12px_12px_0px_var(--accent-purple)]" style={{ background: 'var(--bg-card)' }} onClick={e => e.stopPropagation()}>
             <div className="flex items-start justify-between gap-4 mb-4">
-              <h3 className="text-xl font-black uppercase tracking-tighter" style={{ color: 'var(--text-primary)' }}>{selected.title}</h3>
+              <h3 className="text-lg sm:text-xl font-black uppercase tracking-tighter" style={{ color: 'var(--text-primary)' }}>{selected.title}</h3>
               <span className="px-2 py-1 text-[10px] font-black uppercase flex-shrink-0" style={{ color: difficultyColors[selected.difficulty], border: `2px solid ${difficultyColors[selected.difficulty]}` }}>{selected.difficulty}</span>
             </div>
             {selected.track && <p className="text-xs uppercase tracking-wider mb-4" style={{ color: 'var(--accent-purple)' }}>Track: {selected.track}</p>}
@@ -133,6 +133,7 @@ export const QuickHelpTile = memo(function QuickHelpTile() {
     });
     setMessage("");
     setSent(true);
+    alert("Help request sent to administrators!");
     setTimeout(() => setSent(false), 3000);
   };
 
@@ -245,11 +246,11 @@ export const IdeaBoardTile = memo(function IdeaBoardTile() {
         </div>
         Idea Board
       </h2>
-      <div className="flex-1 flex flex-col items-center justify-center text-center">
+      <div className="flex-1 flex flex-col items-center justify-center text-center px-1">
         {current ? (
           <div className="animate-fade-in" key={current.id}>
-            <p className="text-5xl mb-4">💡</p>
-            <p className="text-lg font-bold leading-snug" style={{ color: 'var(--text-primary)' }}>"{current.prompt}"</p>
+            <p className="text-4xl sm:text-5xl mb-4">💡</p>
+            <p className="text-base sm:text-lg font-bold leading-snug break-words" style={{ color: 'var(--text-primary)' }}>"{current.prompt}"</p>
             {current.category && <p className="mt-3 text-[10px] uppercase tracking-widest" style={{ color: 'var(--accent-purple)' }}>{current.category}</p>}
           </div>
         ) : (
@@ -390,6 +391,7 @@ export const AudienceVotingTile = memo(function AudienceVotingTile({ isAdmin }: 
     if (!poll) return;
     const updatedOptions = poll.options.map((opt, i) => i === optionIndex ? { ...opt, votes: opt.votes + 1 } : opt);
     await updateDoc(doc(db, "votes", pollId), { options: updatedOptions });
+    alert(`Vote for "${poll.options[optionIndex].label}" recorded!`);
   };
 
   if (!activePoll) {
@@ -414,7 +416,7 @@ export const AudienceVotingTile = memo(function AudienceVotingTile({ isAdmin }: 
         </div>
         Live Vote
       </h2>
-      <p className="text-base font-bold mb-4" style={{ color: 'var(--text-primary)' }}>{activePoll.question}</p>
+      <p className="text-sm sm:text-base font-bold mb-4 break-words" style={{ color: 'var(--text-primary)' }}>{activePoll.question}</p>
       <div className="flex-1 space-y-3">
         {activePoll.options.map((opt, i) => {
           const pct = totalVotes > 0 ? Math.round((opt.votes / totalVotes) * 100) : 0;

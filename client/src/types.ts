@@ -67,7 +67,7 @@ export type ActiveUsersPoint = {
 
 // ============ TILE SYSTEM TYPES ============
 
-export type TileSize = "sm" | "md" | "lg";
+export type TileSize = "sm" | "md" | "lg" | "xl";
 
 export type TileType =
   | "stats"
@@ -147,27 +147,32 @@ export type ResourceItem = {
 
 // Default tile layout
 export const DEFAULT_TILES: TileConfig[] = [
-  { id: "tile-progress", type: "eventProgress", size: "lg", order: 0, visible: true },
+  { id: "tile-progress", type: "eventProgress", size: "xl", order: 0, visible: true },
   { id: "tile-clock", type: "masterClock", size: "sm", order: 1, visible: true },
   { id: "tile-stats", type: "stats", size: "lg", order: 2, visible: true },
-  { id: "tile-analytics", type: "analytics", size: "lg", order: 3, visible: true },
-  { id: "tile-countdown", type: "countdown", size: "md", order: 4, visible: true },
-  { id: "tile-circular", type: "circularProgress", size: "sm", order: 5, visible: true },
-  { id: "tile-leaderboard", type: "leaderboard", size: "lg", order: 6, visible: true },
-  { id: "tile-announcements", type: "announcements", size: "md", order: 7, visible: true },
-  { id: "tile-schedule", type: "schedule", size: "md", order: 8, visible: true },
-  { id: "tile-activity", type: "activityFeed", size: "md", order: 9, visible: true },
+  { id: "tile-analytics", type: "analytics", size: "md", order: 3, visible: true },
+  { id: "tile-activity", type: "activityFeed", size: "sm", order: 4, visible: true },
+  { id: "tile-quickLinks", type: "quickLinks", size: "sm", order: 5, visible: true },
+  { id: "tile-problemStatements", type: "problemStatements", size: "sm", order: 6, visible: true },
+  { id: "tile-teamSpotlight", type: "teamSpotlight", size: "sm", order: 7, visible: true },
+  { id: "tile-quickHelp", type: "quickHelp", size: "sm", order: 8, visible: true },
+  { id: "tile-ideaBoard", type: "ideaBoard", size: "sm", order: 9, visible: true },
+  { id: "tile-resourceHub", type: "resourceHub", size: "sm", order: 10, visible: true },
+  { id: "tile-countdown", type: "countdown", size: "sm", order: 11, visible: true },
+  { id: "tile-helpRequests", type: "helpRequests", size: "sm", order: 12, visible: true },
+  { id: "tile-audienceVoting", type: "audienceVoting", size: "sm", order: 13, visible: true },
+  { id: "tile-announcements", type: "announcements", size: "sm", order: 14, visible: true },
 ];
 
 export const TILE_TEMPLATES: { type: TileType; label: string; description: string; icon: string; defaultSize: TileSize }[] = [
   { type: "quickLinks", label: "Quick Links", description: "Custom shortcuts to external resources", icon: "🔗", defaultSize: "sm" },
-  { type: "problemStatements", label: "Problem Statements", description: "Browse hackathon challenges", icon: "📋", defaultSize: "md" },
+  { type: "problemStatements", label: "Problem Statements", description: "Browse hackathon challenges", icon: "📋", defaultSize: "sm" },
   { type: "quickHelp", label: "Quick Help", description: "Send a message to organizers", icon: "🆘", defaultSize: "sm" },
-  { type: "teamSpotlight", label: "Team Spotlight", description: "Highlight trending teams", icon: "⭐", defaultSize: "md" },
+  { type: "teamSpotlight", label: "Team Spotlight", description: "Highlight trending teams", icon: "⭐", defaultSize: "sm" },
   { type: "ideaBoard", label: "Idea Board", description: "Rotating innovation prompts", icon: "💡", defaultSize: "sm" },
-  { type: "resourceHub", label: "Resource Hub", description: "APIs, docs, and tools", icon: "📦", defaultSize: "md" },
-  { type: "helpRequests", label: "Help Requests", description: "Live team issues feed", icon: "🩹", defaultSize: "md" },
-  { type: "audienceVoting", label: "Audience Voting", description: "Live polls and voting", icon: "🗳️", defaultSize: "md" },
+  { type: "resourceHub", label: "Resource Hub", description: "APIs, docs, and tools", icon: "📦", defaultSize: "sm" },
+  { type: "helpRequests", label: "Help Requests", description: "Live team issues feed", icon: "🩹", defaultSize: "sm" },
+  { type: "audienceVoting", label: "Audience Voting", description: "Live polls and voting", icon: "🗳️", defaultSize: "sm" },
   { type: "stats", label: "Stat Cards", description: "Key metrics overview", icon: "📊", defaultSize: "lg" },
-  { type: "leaderboard", label: "Leaderboard", description: "Team rankings", icon: "🏆", defaultSize: "lg" },
+  { type: "leaderboard", label: "Leaderboard", description: "Team rankings", icon: "🏆", defaultSize: "sm" },
 ];

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { addDoc, collection, doc, serverTimestamp, setDoc, updateDoc, deleteDoc, deleteField } from "firebase/firestore";
 import { useMemo, memo } from "react";
-import { FiTrash2, FiPlus, FiChevronDown, FiChevronRight, FiUsers, FiTarget, FiCalendar, FiBarChart2, FiBell, FiImage, FiActivity, FiFileText, FiEdit3, FiCheck, FiHash, FiPlay, FiClock } from "react-icons/fi";
+import { FiTrash2, FiPlus, FiChevronDown, FiChevronRight, FiUsers, FiTarget, FiCalendar, FiBarChart2, FiBell, FiImage, FiActivity, FiFileText, FiEdit3, FiCheck, FiHash, FiPlay, FiClock, FiGrid } from "react-icons/fi";
 import { db } from "../firebase";
 import type { Team, ScheduleItem, Announcement, GalleryItem, ActivityItem, StatDoc } from "../types";
 
@@ -43,17 +43,18 @@ const CustomSelect = ({ value, defaultValue, onChange, options, name }: { value?
 
 // ---------- Theme-Aware Section Header ----------
 const SectionHeader = ({ icon: Icon, title, count, accentClass = "icon-circle-green" }: { icon: React.ElementType; title: string; count?: number; accentClass?: string }) => (
-  <h3 className="flex items-center gap-3 text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
+  <h3 className="flex flex-wrap items-center gap-3 text-base sm:text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
     <div className={`icon-circle ${accentClass}`} style={{ width: 36, height: 36 }}>
       <Icon size={16} />
     </div>
     {title}
-    {count !== undefined && <span className="ml-auto text-sm font-semibold px-3 py-1 rounded-full" style={{ background: 'var(--accent-green-dim)', color: 'var(--accent-green)' }}>{count}</span>}
+    {count !== undefined && <span className="ml-auto text-xs sm:text-sm font-semibold px-3 py-1 rounded-full" style={{ background: 'var(--accent-green-dim)', color: 'var(--accent-green)' }}>{count}</span>}
   </h3>
 );
 
 export default function AdminControlsPage({
   state,
+  showNotification,
 }: {
   state: {
     teams: Team[];
@@ -63,6 +64,7 @@ export default function AdminControlsPage({
     activity: ActivityItem[];
     stats: Partial<StatDoc>;
   };
+  showNotification: (msg: string, type?: 'success' | 'info' | 'error') => void;
 }) {
   const [statsForm, setStatsForm] = useState({
     totalParticipants: state.stats.totalParticipants ?? 0,
@@ -105,6 +107,7 @@ export default function AdminControlsPage({
     { label: "Announcements", icon: FiBell },
     { label: "Gallery", icon: FiImage },
     { label: "Activity", icon: FiActivity },
+    { label: "Tiles Data", icon: FiGrid },
   ];
 
   const toggleSelection = (id: string, e?: React.ChangeEvent | React.MouseEvent) => {
@@ -136,7 +139,7 @@ export default function AdminControlsPage({
 
   const BulkActionBar = ({ collection, items }: { collection: string; items: any[] }) => {
     return (
-      <div className="flex items-center justify-between mb-4 p-3 t-inset" style={{ borderRadius: 'var(--card-radius)' }}>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 p-3 t-inset" style={{ borderRadius: 'var(--card-radius)' }}>
         <label className="flex items-center gap-2 px-2 text-sm font-semibold cursor-pointer select-none" style={{ color: 'var(--text-secondary)' }}>
           <input 
             type="checkbox" 
@@ -150,7 +153,7 @@ export default function AdminControlsPage({
           <button 
             type="button"
             onClick={() => setConfirmDelete({ ids: Array.from(selectedItems), collection, message: `Delete ${selectedItems.size} selected items?` })}
-            className="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2"
+            className="w-full sm:w-auto px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2"
             style={{ background: '#ef4444', color: '#fff' }}
           >
             <FiTrash2 /> Delete Selected ({selectedItems.size})
@@ -161,8 +164,7 @@ export default function AdminControlsPage({
   };
 
   const showMessage = (msg: string) => {
-    setPanelMessage(msg);
-    setTimeout(() => setPanelMessage(""), 2000);
+    showNotification(msg, 'success');
   };
 
   // Listen to external stats updates
@@ -340,10 +342,10 @@ export default function AdminControlsPage({
   );
 
   return (
-    <div className="animate-fade-in w-full p-6 md:p-10 min-h-[850px]" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-main)', borderRadius: 'var(--card-radius)' }}>
+    <div className="animate-fade-in w-full p-4 sm:p-6 md:p-10 min-h-[850px]" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-main)', borderRadius: 'var(--card-radius)' }}>
       <div className="mb-8 pb-6 flex flex-col md:flex-row justify-between items-start md:items-center" style={{ borderBottom: '1px solid var(--border-main)' }}>
         <div>
-          <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>Admin Master Controls</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>Admin Master Controls</h1>
           <p className="mt-1 text-sm" style={{ color: 'var(--text-secondary)' }}>Full read/write permissions for all collections. Handle carefully.</p>
         </div>
       </div>
@@ -370,7 +372,7 @@ export default function AdminControlsPage({
             <button
               key={tab.label}
               onClick={() => { setActiveAdminTab(tab.label); setSelectedItems(new Set()); }}
-              className="whitespace-nowrap px-4 py-2 text-sm font-semibold rounded-full transition flex items-center gap-2"
+              className="whitespace-nowrap px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-full transition flex items-center gap-2"
               style={{
                 background: activeAdminTab === tab.label ? 'var(--accent-green)' : 'var(--bg-inset)',
                 color: activeAdminTab === tab.label ? '#000' : 'var(--text-secondary)',
@@ -388,14 +390,14 @@ export default function AdminControlsPage({
         {/* ===== STATS TAB ===== */}
         {activeAdminTab === "Stats" && (
           <form className="max-w-2xl space-y-4" onSubmit={handleUpdateStats}>
-            <div className="grid grid-cols-2 gap-4 p-6 t-inset" style={{ borderRadius: 'var(--card-radius)' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 sm:p-6 t-inset" style={{ borderRadius: 'var(--card-radius)' }}>
               {Object.entries(statsForm).filter(([k]) => k !== "eventPhase").map(([key, val]) => (
                 <div key={key}>
                   <label className="text-xs font-semibold uppercase block mb-1" style={{ color: 'var(--text-muted)' }}>{key}</label>
                   <input type="number" required value={val as number} onChange={(e) => setStatsForm((prev) => ({ ...prev, [key]: Number(e.target.value) }))} className="w-full t-input p-3 text-sm" />
                 </div>
               ))}
-              <div className="col-span-2">
+              <div className="sm:col-span-2">
                 <label className="text-xs font-semibold uppercase block mb-1" style={{ color: 'var(--text-muted)' }}>Event Phase Tracker</label>
                 <CustomSelect 
                   value={statsForm.eventPhase} 
@@ -413,11 +415,11 @@ export default function AdminControlsPage({
               <FiCheck className="inline mr-2" />Save Statistics to Firestore
             </button>
 
-            <div className="mt-8 p-6 border-[3px] border-dashed border-[var(--border-main)]" style={{ borderRadius: 'var(--card-radius)' }}>
+            <div className="mt-8 p-4 sm:p-6 border-[3px] border-dashed border-[var(--border-main)]" style={{ borderRadius: 'var(--card-radius)' }}>
                <h3 className="text-lg font-black uppercase tracking-tighter mb-4 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                  <FiPlay size={18} className="text-red-500" /> Hackathon Master Clock
                </h3>
-               <div className="grid grid-cols-2 gap-4">
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {state.stats.hackathonStartTime ? (
                     <div className="flex items-center justify-center gap-2 py-4 font-black text-black uppercase tracking-widest bg-yellow-400 border-2 border-white" style={{ borderRadius: 'var(--card-radius)' }}>
                       <div className="w-2 h-2 rounded-full bg-black animate-ping" />
@@ -451,8 +453,8 @@ export default function AdminControlsPage({
 
         {/* ===== TEAMS TAB (Expandable with members) ===== */}
         {activeAdminTab === "Teams" && (
-          <div className="grid lg:grid-cols-2 gap-8">
-            <form className="space-y-4 p-6 t-inset" style={{ borderRadius: 'var(--card-radius)' }} onSubmit={handleAddTeam}>
+          <div className="grid lg:grid-cols-2 gap-5 sm:gap-8">
+            <form className="space-y-4 p-4 sm:p-6 t-inset" style={{ borderRadius: 'var(--card-radius)' }} onSubmit={handleAddTeam}>
               <SectionHeader icon={FiPlus} title="Register New Team" accentClass="icon-circle-green" />
               <input required placeholder="Team Name" value={teamForm.name} onChange={(e) => setTeamForm((p) => ({ ...p, name: e.target.value }))} className="w-full t-input p-3 text-sm" />
               <input required placeholder="Department" value={teamForm.department} onChange={(e) => setTeamForm((p) => ({ ...p, department: e.target.value }))} className="w-full t-input p-3 text-sm" />
@@ -494,7 +496,7 @@ export default function AdminControlsPage({
                     {expandedTeams.has(t.id) && (
                       <div className="px-4 pb-4 pt-0 animate-fade-in" style={{ borderTop: '1px solid var(--border-main)' }}>
                         <p className="text-xs font-semibold uppercase mb-2 mt-3" style={{ color: 'var(--text-muted)' }}>Team Members</p>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           {t.members?.map((m, i) => (
                             <div key={i} className="flex items-center gap-2 px-3 py-2 text-sm" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-main)', borderRadius: 'var(--card-radius)', color: 'var(--text-primary)' }}>
                               <div className="w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold" style={{ background: 'var(--accent-green-dim)', color: 'var(--accent-green)' }}>
@@ -506,9 +508,9 @@ export default function AdminControlsPage({
                         </div>
                         <div className="mt-3">
                           <p className="text-xs font-semibold uppercase mb-2" style={{ color: 'var(--text-muted)' }}>Score</p>
-                          <form className="flex gap-2 items-center" onSubmit={(e) => handleUpdateScore(e, t.id, t.score, t.name)}>
+                          <form className="flex flex-wrap gap-2 items-center" onSubmit={(e) => handleUpdateScore(e, t.id, t.score, t.name)}>
                             <span className="px-3 py-1.5 text-sm font-bold" style={{ background: 'var(--accent-green-dim)', color: 'var(--accent-green)', borderRadius: 'var(--card-radius)' }}>{t.score} pts</span>
-                            <input type="number" name="pts" placeholder="+/- Pts" required className="w-20 t-input px-2 py-1.5 text-sm text-center" />
+                            <input type="number" name="pts" placeholder="+/- Pts" required className="w-full sm:w-20 t-input px-2 py-1.5 text-sm text-center" />
                             <button type="submit" className="px-3 py-1.5 text-sm font-semibold text-black" style={{ background: 'var(--accent-green)', borderRadius: 'var(--card-radius)' }}>Apply</button>
                           </form>
                         </div>
@@ -523,8 +525,8 @@ export default function AdminControlsPage({
 
         {/* ===== PROBLEM STATEMENTS TAB ===== */}
         {activeAdminTab === "Problem Statements" && (
-          <div className="grid lg:grid-cols-2 gap-8">
-            <form className="space-y-4 p-6 t-inset" style={{ borderRadius: 'var(--card-radius)' }} onSubmit={handleAddProblemStatement}>
+          <div className="grid lg:grid-cols-2 gap-5 sm:gap-8">
+            <form className="space-y-4 p-4 sm:p-6 t-inset" style={{ borderRadius: 'var(--card-radius)' }} onSubmit={handleAddProblemStatement}>
               <SectionHeader icon={FiFileText} title="Add Problem Statement" accentClass="icon-circle-orange" />
               <input required placeholder="Problem Statement Title" value={psForm.title} onChange={(e) => setPsForm(p => ({ ...p, title: e.target.value }))} className="w-full t-input p-3 text-sm" />
               <textarea required placeholder="Detailed description of the problem..." value={psForm.description} onChange={(e) => setPsForm(p => ({ ...p, description: e.target.value }))} className="w-full t-input p-3 text-sm min-h-[100px] resize-y" />
@@ -538,7 +540,7 @@ export default function AdminControlsPage({
               <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>Select a team and assign a problem statement to them.</p>
               <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
                 {state.teams.map((t) => (
-                  <div key={t.id} className="p-4 t-inset flex items-center justify-between" style={{ borderRadius: 'var(--card-radius)' }}>
+                  <div key={t.id} className="p-4 t-inset flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between" style={{ borderRadius: 'var(--card-radius)' }}>
                     <div>
                       <p className="font-semibold text-sm" style={{ color: 'var(--text-primary)' }}>{t.name}</p>
                       <p className="text-xs mt-0.5" style={{ color: (t as any).problemStatement ? 'var(--accent-purple)' : 'var(--text-muted)' }}>
@@ -546,7 +548,7 @@ export default function AdminControlsPage({
                       </p>
                     </div>
                     <select
-                      className="t-input px-2 py-1.5 text-xs max-w-[200px]"
+                      className="t-input px-2 py-1.5 text-xs w-full sm:w-auto sm:max-w-[200px]"
                       value={(t as any).problemStatement || ""}
                       onChange={(e) => { if (e.target.value) handleAssignStatement(t.id, e.target.value); }}
                     >
@@ -567,8 +569,8 @@ export default function AdminControlsPage({
 
         {/* ===== SCHEDULE TAB ===== */}
         {activeAdminTab === "Schedule" && (
-          <div className="grid lg:grid-cols-2 gap-8">
-            <form className="space-y-4 p-6 t-inset" style={{ borderRadius: 'var(--card-radius)' }} onSubmit={handleAddSchedule}>
+          <div className="grid lg:grid-cols-2 gap-5 sm:gap-8">
+            <form className="space-y-4 p-4 sm:p-6 t-inset" style={{ borderRadius: 'var(--card-radius)' }} onSubmit={handleAddSchedule}>
               <SectionHeader icon={FiCalendar} title="Add Schedule Block" accentClass="icon-circle-blue" />
               <input required placeholder="Event title (e.g. Hackathon Ends)" value={scheduleForm.title} onChange={(e) => setScheduleForm((p) => ({ ...p, title: e.target.value }))} className="w-full t-input p-3 text-sm" />
               <input required placeholder="Time (HH:MM)" value={scheduleForm.time} onChange={(e) => setScheduleForm((p) => ({ ...p, time: e.target.value }))} className="w-full t-input p-3 text-sm" />
@@ -601,9 +603,9 @@ export default function AdminControlsPage({
                       </div>
                       <DeleteBtn onClick={(e: any) => { e.stopPropagation(); handleDeleteSchedule(item.id); }} />
                     </div>
-                    <div className="flex p-1 rounded-lg" style={{ background: 'var(--bg-card)' }}>
+                    <div className="flex flex-wrap p-1 rounded-lg" style={{ background: 'var(--bg-card)' }}>
                       {(["upcoming", "live", "completed"] as const).map((st) => (
-                        <button key={st} onClick={() => handleUpdateScheduleStatus(item.id, st)} className="flex-1 text-[11px] font-semibold py-1.5 uppercase rounded-md transition" style={{ background: item.status === st ? 'var(--accent-green-dim)' : 'transparent', color: item.status === st ? 'var(--accent-green)' : 'var(--text-muted)' }}>{st}</button>
+                        <button key={st} onClick={() => handleUpdateScheduleStatus(item.id, st)} className="flex-1 min-w-[90px] text-[11px] font-semibold py-1.5 uppercase rounded-md transition" style={{ background: item.status === st ? 'var(--accent-green-dim)' : 'transparent', color: item.status === st ? 'var(--accent-green)' : 'var(--text-muted)' }}>{st}</button>
                       ))}
                     </div>
                   </div>
@@ -615,8 +617,8 @@ export default function AdminControlsPage({
 
         {/* ===== ANNOUNCEMENTS TAB ===== */}
         {activeAdminTab === "Announcements" && (
-          <div className="grid lg:grid-cols-2 gap-8">
-            <form className="space-y-4 p-6 t-inset" style={{ borderRadius: 'var(--card-radius)' }} onSubmit={handleAddAnnouncement}>
+          <div className="grid lg:grid-cols-2 gap-5 sm:gap-8">
+            <form className="space-y-4 p-4 sm:p-6 t-inset" style={{ borderRadius: 'var(--card-radius)' }} onSubmit={handleAddAnnouncement}>
               <SectionHeader icon={FiBell} title="Push Announcement" accentClass="icon-circle-orange" />
               <input required placeholder="Provide a detailed message..." value={announcementMessage} onChange={(e) => setAnnouncementMessage(e.target.value)} className="w-full t-input p-3 text-sm" />
               <CustomSelect 
@@ -656,8 +658,8 @@ export default function AdminControlsPage({
 
         {/* ===== GALLERY TAB ===== */}
         {activeAdminTab === "Gallery" && (
-          <div className="grid lg:grid-cols-2 gap-8">
-            <form className="space-y-4 p-6 t-inset" style={{ borderRadius: 'var(--card-radius)' }} onSubmit={handleUploadImage}>
+          <div className="grid lg:grid-cols-2 gap-5 sm:gap-8">
+            <form className="space-y-4 p-4 sm:p-6 t-inset" style={{ borderRadius: 'var(--card-radius)' }} onSubmit={handleUploadImage}>
               <SectionHeader icon={FiImage} title="Add Image Module" accentClass="icon-circle-green" />
               <input required placeholder="https://image-url.com/image.png" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} className="w-full t-input p-3 text-sm" />
               <input required placeholder="Author" value={uploadedBy} onChange={(e) => setUploadedBy(e.target.value)} className="w-full t-input p-3 text-sm" />
@@ -707,20 +709,156 @@ export default function AdminControlsPage({
               </div>
           </div>
         )}
+
+        {/* ===== TILES DATA TAB ===== */}
+        {activeAdminTab === "Tiles Data" && (
+          <div className="grid gap-5 sm:gap-6 md:grid-cols-2 xl:grid-cols-3">
+            
+            {/* Quick Links Admin */}
+            <section className="t-card p-5">
+              <SectionHeader icon={FiActivity} title="Quick Links" accentClass="icon-circle-cyan" />
+              <form className="space-y-2" onSubmit={async (e) => {
+                e.preventDefault();
+                const form = e.currentTarget;
+                const name = (form.elements.namedItem("qlname") as HTMLInputElement).value;
+                const url = (form.elements.namedItem("qlurl") as HTMLInputElement).value;
+                if (!name || !url) return;
+                await addDoc(collection(db, "quickLinks"), { name, url, timestamp: serverTimestamp() });
+                (form.elements.namedItem("qlname") as HTMLInputElement).value = "";
+                (form.elements.namedItem("qlurl") as HTMLInputElement).value = "";
+                showMessage("Quick Link added!");
+              }}>
+                <input name="qlname" placeholder="Link Name" required className="w-full t-input px-3 py-2 text-sm" />
+                <input name="qlurl" placeholder="https://..." required className="w-full t-input px-3 py-2 text-sm" />
+                <button type="submit" className="w-full py-2 font-bold text-sm text-black" style={{ background: 'var(--accent-cyan)', borderRadius: 'var(--card-radius)' }}>
+                  <FiPlus className="inline mr-1" /> Add Link
+                </button>
+              </form>
+            </section>
+
+            {/* Problem Statements Admin */}
+            <section className="t-card p-5">
+              <SectionHeader icon={FiFileText} title="Problem Statements" accentClass="icon-circle-purple" />
+              <form className="space-y-2" onSubmit={async (e) => {
+                e.preventDefault();
+                const form = e.currentTarget;
+                const title = (form.elements.namedItem("pstitle") as HTMLInputElement).value;
+                const description = (form.elements.namedItem("psdesc") as HTMLTextAreaElement).value;
+                const difficulty = (form.elements.namedItem("psdiff") as HTMLInputElement).value || "medium";
+                const track = (form.elements.namedItem("pstrack") as HTMLInputElement).value;
+                if (!title || !description) return;
+                await addDoc(collection(db, "problemStatements"), { title, description, difficulty, track, timestamp: serverTimestamp() });
+                form.reset();
+                showMessage("Problem Statement added!");
+              }}>
+                <input name="pstitle" placeholder="Problem Title" required className="w-full t-input px-3 py-2 text-sm" />
+                <textarea name="psdesc" placeholder="Description..." required className="w-full t-input px-3 py-2 text-sm resize-none h-20" />
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <CustomSelect name="psdiff" options={[
+                    { label: "Easy", value: "easy" },
+                    { label: "Medium", value: "medium" },
+                    { label: "Hard", value: "hard" },
+                  ]} />
+                  <input name="pstrack" placeholder="Track" className="flex-1 t-input px-3 py-2 text-sm" />
+                </div>
+                <button type="submit" className="w-full py-2 font-bold text-sm text-black" style={{ background: 'var(--accent-purple)', borderRadius: 'var(--card-radius)' }}>
+                  <FiPlus className="inline mr-1" /> Add Problem
+                </button>
+              </form>
+            </section>
+
+            {/* Idea Board Admin */}
+            <section className="t-card p-5">
+              <SectionHeader icon={FiBell} title="Idea Board" accentClass="icon-circle-orange" />
+              <form className="space-y-2" onSubmit={async (e) => {
+                e.preventDefault();
+                const form = e.currentTarget;
+                const prompt = (form.elements.namedItem("ideaprompt") as HTMLInputElement).value;
+                const category = (form.elements.namedItem("ideacat") as HTMLInputElement).value;
+                if (!prompt) return;
+                await addDoc(collection(db, "ideaBoard"), { prompt, category, timestamp: serverTimestamp() });
+                form.reset();
+                showMessage("Idea Prompt added!");
+              }}>
+                <input name="ideaprompt" placeholder="Innovation prompt..." required className="w-full t-input px-3 py-2 text-sm" />
+                <input name="ideacat" placeholder="Category (optional)" className="w-full t-input px-3 py-2 text-sm" />
+                <button type="submit" className="w-full py-2 font-bold text-sm text-black" style={{ background: 'var(--accent-orange)', borderRadius: 'var(--card-radius)' }}>
+                  <FiPlus className="inline mr-1" /> Add Prompt
+                </button>
+              </form>
+            </section>
+
+            {/* Resources Admin */}
+            <section className="t-card p-5">
+              <SectionHeader icon={FiTarget} title="Resources" accentClass="icon-circle-blue" />
+              <form className="space-y-2" onSubmit={async (e) => {
+                e.preventDefault();
+                const form = e.currentTarget;
+                const name = (form.elements.namedItem("resname") as HTMLInputElement).value;
+                const url = (form.elements.namedItem("resurl") as HTMLInputElement).value;
+                const category = (form.elements.namedItem("rescat") as HTMLInputElement).value || "docs";
+                const description = (form.elements.namedItem("resdesc") as HTMLInputElement).value;
+                if (!name || !url) return;
+                await addDoc(collection(db, "resources"), { name, url, category, description });
+                form.reset();
+                showMessage("Resource added!");
+              }}>
+                <input name="resname" placeholder="Resource Name" required className="w-full t-input px-3 py-2 text-sm" />
+                <input name="resurl" placeholder="https://..." required className="w-full t-input px-3 py-2 text-sm" />
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <CustomSelect name="rescat" options={[
+                    { label: "API", value: "api" },
+                    { label: "Docs", value: "docs" },
+                    { label: "Tool", value: "tool" },
+                    { label: "Template", value: "template" },
+                  ]} />
+                  <input name="resdesc" placeholder="Description" className="flex-1 t-input px-3 py-2 text-sm" />
+                </div>
+                <button type="submit" className="w-full py-2 font-bold text-sm text-black" style={{ background: 'var(--accent-blue)', borderRadius: 'var(--card-radius)' }}>
+                  <FiPlus className="inline mr-1" /> Add Resource
+                </button>
+              </form>
+            </section>
+
+            {/* Voting Admin */}
+            <section className="t-card p-5 md:col-span-2">
+              <SectionHeader icon={FiBarChart2} title="Audience Voting" accentClass="icon-circle-pink" />
+              <form className="space-y-2" onSubmit={async (e) => {
+                e.preventDefault();
+                const form = e.currentTarget;
+                const question = (form.elements.namedItem("vquestion") as HTMLInputElement).value;
+                const optionsRaw = (form.elements.namedItem("voptions") as HTMLInputElement).value;
+                if (!question || !optionsRaw) return;
+                const options = optionsRaw.split(",").map(s => ({ label: s.trim(), votes: 0 })).filter(o => o.label);
+                if (options.length < 2) return;
+                await addDoc(collection(db, "votes"), { question, options, isActive: true, timestamp: serverTimestamp() });
+                form.reset();
+                showMessage("Poll created successfully!");
+              }}>
+                <input name="vquestion" placeholder="Poll Question" required className="w-full t-input px-3 py-2 text-sm" />
+                <input name="voptions" placeholder="Option 1, Option 2, Option 3..." required className="w-full t-input px-3 py-2 text-sm" />
+                <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Separate options with commas. Min 2 options.</p>
+                <button type="submit" className="w-full py-2 font-bold text-sm text-black" style={{ background: 'var(--accent-pink)', borderRadius: 'var(--card-radius)' }}>
+                  <FiPlus className="inline mr-1" /> Create Poll
+                </button>
+              </form>
+            </section>
+          </div>
+        )}
       </div>
 
       {/* Custom Themed Confirmation Modal */}
       {themedConfirm.show && createPortal(
         <div className="fixed inset-0 z-[100001] flex items-center justify-center p-4 backdrop-blur-md animate-fade-in" style={{ background: 'rgba(0,0,0,0.85)' }}>
            <div 
-             className="w-full max-w-md p-8 border-[6px] border-white shadow-[15px_15px_0px_rgba(255,255,255,1)] transition-all transform scale-100"
+             className="w-full max-w-md p-5 sm:p-8 border-[6px] border-white shadow-[15px_15px_0px_rgba(255,255,255,1)] transition-all transform scale-100"
              style={{ background: 'var(--bg-card)' }}
            >
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 bg-red-500 border-2 border-white flex items-center justify-center text-black font-black">!</div>
-                <h3 className="text-2xl font-black uppercase tracking-tighter" style={{ color: 'var(--text-primary)' }}>{themedConfirm.title}</h3>
+                <h3 className="text-xl sm:text-2xl font-black uppercase tracking-tighter" style={{ color: 'var(--text-primary)' }}>{themedConfirm.title}</h3>
               </div>
-              <p className="text-lg font-medium leading-relaxed mb-8" style={{ color: 'var(--text-secondary)' }}>{themedConfirm.message}</p>
+              <p className="text-base sm:text-lg font-medium leading-relaxed mb-8" style={{ color: 'var(--text-secondary)' }}>{themedConfirm.message}</p>
               <div className="grid grid-cols-2 gap-4">
                  <button 
                    onClick={() => { themedConfirm.onConfirm(); setThemedConfirm(p => ({ ...p, show: false })); }}
@@ -744,9 +882,9 @@ export default function AdminControlsPage({
       {/* Delete Confirmation Modal */}
       {confirmDelete && createPortal(
         <div className="fixed inset-0 z-[100002] flex items-center justify-center p-4 backdrop-blur-md animate-fade-in" style={{ background: 'rgba(0,0,0,0.85)' }}>
-          <div className="max-w-sm w-full p-8 border-[6px] border-white shadow-[12px_12px_0px_#ef4444]" style={{ background: 'var(--bg-card)' }}>
-            <h3 className="text-2xl font-black uppercase tracking-tighter mb-2" style={{ color: 'var(--text-primary)' }}>Warning_Delete</h3>
-            <p className="mb-8 font-medium text-lg leading-tight" style={{ color: 'var(--text-secondary)' }}>{confirmDelete.message}</p>
+          <div className="max-w-sm w-full p-5 sm:p-8 border-[6px] border-white shadow-[12px_12px_0px_#ef4444]" style={{ background: 'var(--bg-card)' }}>
+            <h3 className="text-xl sm:text-2xl font-black uppercase tracking-tighter mb-2" style={{ color: 'var(--text-primary)' }}>Warning_Delete</h3>
+            <p className="mb-8 font-medium text-base sm:text-lg leading-tight" style={{ color: 'var(--text-secondary)' }}>{confirmDelete.message}</p>
             <div className="grid grid-cols-2 gap-4">
               <button 
                 type="button"
@@ -770,134 +908,7 @@ export default function AdminControlsPage({
       )}
 
 
-      {/* ============ TILE DATA MANAGEMENT ============ */}
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3 mt-8">
-        
-        {/* Quick Links Admin */}
-        <section className="t-card p-5">
-          <SectionHeader icon={FiActivity} title="Quick Links" accentClass="icon-circle-cyan" />
-          <form className="space-y-2" onSubmit={async (e) => {
-            e.preventDefault();
-            const form = e.currentTarget;
-            const name = (form.elements.namedItem("qlname") as HTMLInputElement).value;
-            const url = (form.elements.namedItem("qlurl") as HTMLInputElement).value;
-            if (!name || !url) return;
-            await addDoc(collection(db, "quickLinks"), { name, url, timestamp: serverTimestamp() });
-            (form.elements.namedItem("qlname") as HTMLInputElement).value = "";
-            (form.elements.namedItem("qlurl") as HTMLInputElement).value = "";
-          }}>
-            <input name="qlname" placeholder="Link Name" required className="w-full t-input px-3 py-2 text-sm" />
-            <input name="qlurl" placeholder="https://..." required className="w-full t-input px-3 py-2 text-sm" />
-            <button type="submit" className="w-full py-2 font-bold text-sm text-black" style={{ background: 'var(--accent-cyan)', borderRadius: 'var(--card-radius)' }}>
-              <FiPlus className="inline mr-1" /> Add Link
-            </button>
-          </form>
-        </section>
-
-        {/* Problem Statements Admin */}
-        <section className="t-card p-5">
-          <SectionHeader icon={FiFileText} title="Problem Statements" accentClass="icon-circle-purple" />
-          <form className="space-y-2" onSubmit={async (e) => {
-            e.preventDefault();
-            const form = e.currentTarget;
-            const title = (form.elements.namedItem("pstitle") as HTMLInputElement).value;
-            const description = (form.elements.namedItem("psdesc") as HTMLTextAreaElement).value;
-            const difficulty = (form.elements.namedItem("psdiff") as HTMLInputElement).value || "medium";
-            const track = (form.elements.namedItem("pstrack") as HTMLInputElement).value;
-            if (!title || !description) return;
-            await addDoc(collection(db, "problemStatements"), { title, description, difficulty, track, timestamp: serverTimestamp() });
-            form.reset();
-          }}>
-            <input name="pstitle" placeholder="Problem Title" required className="w-full t-input px-3 py-2 text-sm" />
-            <textarea name="psdesc" placeholder="Description..." required className="w-full t-input px-3 py-2 text-sm resize-none h-20" />
-            <div className="flex gap-2">
-              <CustomSelect name="psdiff" options={[
-                { label: "Easy", value: "easy" },
-                { label: "Medium", value: "medium" },
-                { label: "Hard", value: "hard" },
-              ]} />
-              <input name="pstrack" placeholder="Track" className="flex-1 t-input px-3 py-2 text-sm" />
-            </div>
-            <button type="submit" className="w-full py-2 font-bold text-sm text-black" style={{ background: 'var(--accent-purple)', borderRadius: 'var(--card-radius)' }}>
-              <FiPlus className="inline mr-1" /> Add Problem
-            </button>
-          </form>
-        </section>
-
-        {/* Idea Board Admin */}
-        <section className="t-card p-5">
-          <SectionHeader icon={FiBell} title="Idea Board" accentClass="icon-circle-orange" />
-          <form className="space-y-2" onSubmit={async (e) => {
-            e.preventDefault();
-            const form = e.currentTarget;
-            const prompt = (form.elements.namedItem("ideaprompt") as HTMLInputElement).value;
-            const category = (form.elements.namedItem("ideacat") as HTMLInputElement).value;
-            if (!prompt) return;
-            await addDoc(collection(db, "ideaBoard"), { prompt, category, timestamp: serverTimestamp() });
-            form.reset();
-          }}>
-            <input name="ideaprompt" placeholder="Innovation prompt..." required className="w-full t-input px-3 py-2 text-sm" />
-            <input name="ideacat" placeholder="Category (optional)" className="w-full t-input px-3 py-2 text-sm" />
-            <button type="submit" className="w-full py-2 font-bold text-sm text-black" style={{ background: 'var(--accent-orange)', borderRadius: 'var(--card-radius)' }}>
-              <FiPlus className="inline mr-1" /> Add Prompt
-            </button>
-          </form>
-        </section>
-
-        {/* Resources Admin */}
-        <section className="t-card p-5">
-          <SectionHeader icon={FiTarget} title="Resources" accentClass="icon-circle-blue" />
-          <form className="space-y-2" onSubmit={async (e) => {
-            e.preventDefault();
-            const form = e.currentTarget;
-            const name = (form.elements.namedItem("resname") as HTMLInputElement).value;
-            const url = (form.elements.namedItem("resurl") as HTMLInputElement).value;
-            const category = (form.elements.namedItem("rescat") as HTMLInputElement).value || "docs";
-            const description = (form.elements.namedItem("resdesc") as HTMLInputElement).value;
-            if (!name || !url) return;
-            await addDoc(collection(db, "resources"), { name, url, category, description });
-            form.reset();
-          }}>
-            <input name="resname" placeholder="Resource Name" required className="w-full t-input px-3 py-2 text-sm" />
-            <input name="resurl" placeholder="https://..." required className="w-full t-input px-3 py-2 text-sm" />
-            <div className="flex gap-2">
-              <CustomSelect name="rescat" options={[
-                { label: "API", value: "api" },
-                { label: "Docs", value: "docs" },
-                { label: "Tool", value: "tool" },
-                { label: "Template", value: "template" },
-              ]} />
-              <input name="resdesc" placeholder="Description" className="flex-1 t-input px-3 py-2 text-sm" />
-            </div>
-            <button type="submit" className="w-full py-2 font-bold text-sm text-black" style={{ background: 'var(--accent-blue)', borderRadius: 'var(--card-radius)' }}>
-              <FiPlus className="inline mr-1" /> Add Resource
-            </button>
-          </form>
-        </section>
-
-        {/* Voting Admin */}
-        <section className="t-card p-5 md:col-span-2">
-          <SectionHeader icon={FiBarChart2} title="Audience Voting" accentClass="icon-circle-pink" />
-          <form className="space-y-2" onSubmit={async (e) => {
-            e.preventDefault();
-            const form = e.currentTarget;
-            const question = (form.elements.namedItem("vquestion") as HTMLInputElement).value;
-            const optionsRaw = (form.elements.namedItem("voptions") as HTMLInputElement).value;
-            if (!question || !optionsRaw) return;
-            const options = optionsRaw.split(",").map(s => ({ label: s.trim(), votes: 0 })).filter(o => o.label);
-            if (options.length < 2) return;
-            await addDoc(collection(db, "votes"), { question, options, isActive: true, timestamp: serverTimestamp() });
-            form.reset();
-          }}>
-            <input name="vquestion" placeholder="Poll Question" required className="w-full t-input px-3 py-2 text-sm" />
-            <input name="voptions" placeholder="Option 1, Option 2, Option 3..." required className="w-full t-input px-3 py-2 text-sm" />
-            <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Separate options with commas. Min 2 options.</p>
-            <button type="submit" className="w-full py-2 font-bold text-sm text-black" style={{ background: 'var(--accent-pink)', borderRadius: 'var(--card-radius)' }}>
-              <FiPlus className="inline mr-1" /> Create Poll
-            </button>
-          </form>
-        </section>
-      </div>
+      {/* Tiles Data Management moved to its own tab */}
 
     </div>
   );

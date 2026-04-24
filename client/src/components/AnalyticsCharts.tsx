@@ -38,7 +38,7 @@ export function AnalyticsCharts({
   scoreData: ScorePoint[];
 }) {
   return (
-    <section className="grid gap-4 xl:grid-cols-2">
+    <section className="grid gap-4 xl:grid-cols-2 h-full">
       <article className="t-card p-5 min-w-0">
         <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
           Participation by Department

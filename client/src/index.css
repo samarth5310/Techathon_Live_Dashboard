@@ -114,6 +114,9 @@ html,
 body,
 #root {
   min-height: 100%;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -350,33 +353,36 @@ button, input, select, textarea {
   .tile-grid { grid-template-columns: repeat(6, 1fr); }
 }
 
-@media (max-width: 768px) {
-  .tile-grid { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 900px) {
+  .tile-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 560px) {
   .tile-grid { grid-template-columns: 1fr; }
 }
 
 /* Tile sizes */
 .tile-sm { grid-column: span 3; }
 .tile-md { grid-column: span 6; }
+.tile-xl { grid-column: span 9; }
 .tile-lg { grid-column: span 12; }
 
 @media (max-width: 1280px) {
   .tile-sm { grid-column: span 3; }
   .tile-md { grid-column: span 6; }
+  .tile-xl { grid-column: span 6; }
   .tile-lg { grid-column: span 6; }
 }
 
-@media (max-width: 768px) {
-  .tile-sm { grid-column: span 3; }
-  .tile-md { grid-column: span 3; }
-  .tile-lg { grid-column: span 3; }
+@media (max-width: 900px) {
+  .tile-sm { grid-column: span 1; }
+  .tile-md { grid-column: span 2; }
+  .tile-xl { grid-column: span 2; }
+  .tile-lg { grid-column: span 2; }
 }
 
-@media (max-width: 480px) {
-  .tile-sm, .tile-md, .tile-lg { grid-column: span 1; }
+@media (max-width: 560px) {
+  .tile-sm, .tile-md, .tile-lg, .tile-xl { grid-column: span 1; }
 }
 
 /* Tile wrapper */
@@ -422,6 +428,19 @@ button, input, select, textarea {
   border-radius: var(--card-radius);
 }
 
+@media (max-width: 640px) {
+  .tile-delete-btn {
+    width: 32px;
+    height: 32px;
+    top: 6px;
+    right: 6px;
+  }
+
+  .tile-template-card {
+    padding: 12px;
+  }
+}
+
 .edit-mode .tile-delete-btn {
   opacity: 1;
   transform: scale(1);
@@ -458,16 +477,23 @@ button, input, select, textarea {
   position: absolute;
   bottom: 4px;
   right: 4px;
-  width: 16px;
-  height: 16px;
+  width: 24px;
+  height: 24px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border-main);
+  border-radius: 4px;
   cursor: nwse-resize;
   opacity: 0;
-  transition: opacity 0.2s;
-  z-index: 50;
+  transition: all 0.2s;
+  z-index: 100;
 }
 
 .edit-mode .tile-resize-handle {
-  opacity: 0.6;
+  opacity: 0.8;
 }
 
 .edit-mode .tile-resize-handle:hover {
