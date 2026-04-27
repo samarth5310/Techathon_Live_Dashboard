@@ -145,6 +145,28 @@ export type ResourceItem = {
   description?: string;
 };
 
+// ============ TEAM PORTAL TYPES ============
+
+export type TeamPortalParticipant = {
+  name: string;
+  email: string;
+};
+
+export type TeamPortalEntry = {
+  id: string;
+  teamName: string;
+  teamCode: string;
+  leaderName: string;
+  leaderEmail: string;
+  participants: TeamPortalParticipant[];
+  allottedRoom: string;
+  internetDetails: string;
+  problemStatementTitle: string;
+  problemStatementDescription: string;
+  additionalNotes: string;
+  createdAt?: unknown;
+};
+
 // Default tile layout
 export const DEFAULT_TILES: TileConfig[] = [
   { id: "tile-progress", type: "eventProgress", size: "xl", order: 0, visible: true },

@@ -56,11 +56,12 @@ import {
 import { auth, db } from "./firebase";
 import {
   AnalyticsCharts,
-  type DepartmentPoint,
+  type ProblemStatementPoint,
   type StatusPoint,
   type ScorePoint,
 } from "./components/AnalyticsCharts";
 import AdminControlsPage from "./components/AdminControlsPage";
+import TeamPortalPage from "./components/TeamPortalPage";
 import {
   QuickLinksTile,
   ProblemStatementsTile,
@@ -888,25 +889,73 @@ const ProjectorLeaderboardSlide = memo(function ProjectorLeaderboardSlide({ team
 const ProjectorGallerySlide = memo(function ProjectorGallerySlide({ items }: { items: GalleryItem[] }) {
   const [slideIndex, setSlideIndex] = useState(0);
 
-  useEffect(() => {
-    if (slideIndex >= items.length) {
-      setSlideIndex(0);
-    }
-  }, [items.length, slideIndex]);
+  const slides = useMemo(() => {
+    const extractDriveId = (url: string) => {
+      const fileMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (fileMatch?.[1]) return fileMatch[1];
+      const openMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+      if (openMatch?.[1]) return openMatch[1];
+      return null;
+    };
+
+    return items
+      .map((item) => {
+        const raw = (item.imageUrl ?? "").trim();
+        if (!raw) {
+          return null;
+        }
+
+        const folderMatch = raw.match(/\/folders\/([a-zA-Z0-9_-]+)/);
+        if (folderMatch?.[1]) {
+          return {
+            id: item.id,
+            label: item.uploadedBy || "Drive Folder",
+            src: `https://drive.google.com/embeddedfolderview?id=${folderMatch[1]}#grid`,
+            mode: "iframe" as const,
+          };
+        }
+
+        if (raw.includes("drive.google.com")) {
+          const driveId = extractDriveId(raw);
+          if (driveId) {
+            return {
+              id: item.id,
+              label: item.uploadedBy || "Drive Image",
+              src: `https://drive.google.com/uc?export=view&id=${driveId}`,
+              mode: "image" as const,
+            };
+          }
+        }
+
+        return {
+          id: item.id,
+          label: item.uploadedBy || "Gallery Source",
+          src: raw,
+          mode: "image" as const,
+        };
+      })
+      .filter((slide): slide is { id: string; label: string; src: string; mode: "image" | "iframe" } => Boolean(slide));
+  }, [items]);
 
   useEffect(() => {
-    if (items.length <= 1) {
+    if (slideIndex >= slides.length) {
+      setSlideIndex(0);
+    }
+  }, [slides.length, slideIndex]);
+
+  useEffect(() => {
+    if (slides.length <= 1) {
       return;
     }
 
     const interval = setInterval(() => {
-      setSlideIndex((prev) => (prev + 1) % items.length);
-    }, 4000);
+      setSlideIndex((prev) => (prev + 1) % slides.length);
+    }, 4500);
 
     return () => clearInterval(interval);
-  }, [items.length]);
+  }, [slides.length]);
 
-  const current = items[slideIndex] ?? null;
+  const current = slides[slideIndex] ?? null;
 
   return (
     <section className="projector-fade grid h-full grid-cols-1 gap-10 xl:grid-cols-[2fr_1fr] bg-black p-10 border-[12px] border-[#A855F7] font-mono relative">
@@ -914,7 +963,25 @@ const ProjectorGallerySlide = memo(function ProjectorGallerySlide({ items }: { i
       
       <div className="overflow-hidden border-[8px] border-[#A855F7] bg-black relative z-10 flex items-center justify-center">
         {current ? (
-          <img src={current.imageUrl} alt="Gallery slide" className="h-full w-full object-contain p-4" />
+          current.mode === "iframe" ? (
+            <iframe
+              src={current.src}
+              title="Gallery drive"
+              className="h-full w-full border-none"
+              allow="autoplay"
+            />
+          ) : (
+            <img
+              src={current.src}
+              alt="Gallery slide"
+              className="h-full w-full object-contain p-4"
+              onError={() => {
+                if (slides.length > 1) {
+                  setSlideIndex((prev) => (prev + 1) % slides.length);
+                }
+              }}
+            />
+          )
         ) : (
           <div className="text-4xl text-[#A855F7] font-black uppercase animate-pulse">SIGNAL_STRENGTH_WEAK</div>
         )}
@@ -923,14 +990,14 @@ const ProjectorGallerySlide = memo(function ProjectorGallerySlide({ items }: { i
         <h3 className="mb-6 text-6xl font-black text-[#A855F7] uppercase border-b-[6px] border-[#A855F7] pb-4">_MEDIA_FEED_</h3>
         <p className="mb-8 text-2xl text-purple-300 font-bold uppercase tracking-widest animate-pulse">[ AUTO_CYCLE : ON ]</p>
         <div className="space-y-4 flex-1 overflow-hidden">
-          {items.slice(0, 8).map((item, index) => (
+          {slides.slice(0, 8).map((item, index) => (
             <div
               key={item.id}
               className={`border-[4px] px-6 py-4 font-bold text-2xl uppercase truncate transition-colors ${
                 index === slideIndex ? "border-white text-white bg-[#A855F7]/40 shadow-[0_0_15px_rgba(168,85,247,0.8)]" : "border-[#A855F7]/40 text-[#A855F7] bg-black"
               }`}
             >
-              {item.uploadedBy || `SOURCE_${index+1}`}
+              {item.label || `SOURCE_${index+1}`}
             </div>
           ))}
         </div>
@@ -1154,7 +1221,8 @@ function App() {
   const availableTabs = useMemo(() => {
     const tabs = [
       { label: "Dashboard", icon: FiGrid },
-      { label: "Gallery", icon: FiImage }
+      { label: "Gallery", icon: FiImage },
+      { label: "Team Portal", icon: FiUsers },
     ];
     if (isAdmin) {
       tabs.push({ label: "Scoring", icon: FiHash });
@@ -1209,9 +1277,24 @@ function App() {
     );
 
     const unsubTeams = onSnapshot(
-      query(collection(db, "teams"), orderBy("lastActive", "desc")),
+      query(collection(db, "teamPortal")),
       (snapshot) => {
-        const rows = snapshot.docs.map((item) => ({ id: item.id, ...(item.data() as Omit<Team, "id">) }));
+        const rows = snapshot.docs.map((item) => {
+          const data = item.data();
+          const p = data.participants || [];
+          const leader = data.leaderName ? [data.leaderName] : [];
+          const memberNames = [...leader, ...p.map((x: any) => x.name)];
+          return {
+            id: item.id,
+            teamId: data.teamCode || "",
+            name: data.teamName || "Unnamed Team",
+            members: memberNames,
+            score: data.score || 0,
+            status: data.status || "building",
+            lastActive: data.lastActive || data.createdAt,
+            department: data.department || "",
+          } as Team;
+        });
         const sig = rows
           .map(
             (item) =>
@@ -1434,15 +1517,15 @@ function App() {
   const resolvedStats = useMemo(
     () => ({
       totalParticipants:
-        state.stats.totalParticipants ?? state.teams.reduce((sum, team) => sum + (team.members?.length ?? 0), 0),
-      teamsRegistered: state.stats.teamsRegistered ?? state.teams.length,
+        state.stats.totalParticipants || state.teams.reduce((sum, team) => sum + (team.members?.length || 0), 0),
+      teamsRegistered: state.stats.teamsRegistered || state.teams.length,
       projectsSubmitted:
-        state.stats.projectsSubmitted ?? state.teams.filter((team) => team.status === "submitted").length,
+        state.stats.projectsSubmitted || state.teams.filter((team) => team.status === "submitted").length,
       activeNow:
-        state.stats.activeNow ??
+        state.stats.activeNow ||
         state.teams.filter((team) => team.status === "building" || team.status === "testing").length,
-      prizePool: state.stats.prizePool ?? 0,
-      eventPhase: state.stats.eventPhase ?? "inauguration",
+      prizePool: state.stats.prizePool || 0,
+      eventPhase: state.stats.eventPhase || "inauguration",
       hackathonStartTime: state.stats.hackathonStartTime 
         ? (typeof state.stats.hackathonStartTime === 'number' 
             ? state.stats.hackathonStartTime 
@@ -1452,13 +1535,13 @@ function App() {
     [state.stats, state.teams]
   );
 
-  const resolvedDepartmentData = useMemo(() => {
+  const resolvedProblemStatementData = useMemo(() => {
     const counts: Record<string, number> = {};
     for (const team of state.teams) {
-      if (!team.department) continue;
-      counts[team.department] = (counts[team.department] || 0) + (team.members?.length || 1);
+      const ps = team.problemStatement || "Unassigned";
+      counts[ps] = (counts[ps] || 0) + 1;
     }
-    return Object.entries(counts).map(([department, participants]) => ({ department, participants }));
+    return Object.entries(counts).map(([name, value]) => ({ name, value }));
   }, [state.teams]);
 
   const resolvedStatusData = useMemo(() => {
@@ -1774,7 +1857,7 @@ function App() {
         return <HackathonClockCard startTime={resolvedStats.hackathonStartTime} />;
       case "stats":
         return (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 h-full">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-5 h-full">
             <StatCard title="Total Students" value={resolvedStats.totalParticipants} accent="green" icon={FiUsers} />
             <StatCard title="Total Teams" value={resolvedStats.teamsRegistered} accent="purple" icon={FiTarget} />
             <StatCard title="Prize Pool" value={resolvedStats.prizePool} prefix="₹" accent="orange" icon={FiGift} />
@@ -1785,7 +1868,7 @@ function App() {
       case "analytics":
         return (
           <AnalyticsCharts
-            departmentData={resolvedDepartmentData}
+            problemStatementData={resolvedProblemStatementData}
             statusData={resolvedStatusData}
             scoreData={resolvedScoreData}
           />
@@ -1887,7 +1970,7 @@ function App() {
       default:
         return <div className="t-card p-5 h-full flex items-center justify-center"><p className="text-sm" style={{ color: 'var(--text-muted)' }}>Unknown tile</p></div>;
     }
-  }, [resolvedStats, resolvedDepartmentData, resolvedStatusData, resolvedScoreData, nextUpcomingEvent, handleCountdownReachedZero, completionPercentage, leaderboardTeams, trendingTeamIds, state.announcements, state.schedule, state.activity, freshActivityIds, isAdmin]);
+  }, [resolvedStats, resolvedProblemStatementData, resolvedStatusData, resolvedScoreData, nextUpcomingEvent, handleCountdownReachedZero, completionPercentage, leaderboardTeams, trendingTeamIds, state.announcements, state.schedule, state.activity, freshActivityIds, isAdmin]);
 
   if (projectorMode) {
     const labels = ["24HR COUNTDOWN", "LIVE STATS", "RANKINGS", "MEDIA FEED"];
@@ -1946,8 +2029,8 @@ function App() {
   return (
     <div className="min-h-screen w-full overflow-x-hidden p-2 md:p-4 pb-32 md:pb-36 relative transition-colors duration-300" style={{ background: 'var(--bg-app)', color: 'var(--text-primary)' }}>
       {/* Floating Bottom Navigation Island */}
-      <div className="fixed left-1/2 -translate-x-1/2 bottom-[max(0.75rem,env(safe-area-inset-bottom))] sm:bottom-6 z-[9999] pointer-events-none w-[calc(100%-1rem)] sm:w-full max-w-[460px] sm:max-w-none flex justify-center px-0 sm:px-4 animate-fade-in">
-        <nav className="flex w-full items-stretch justify-between gap-1 sm:gap-2 p-1.5 sm:p-2 backdrop-blur-xl shadow-[0_20px_60px_-10px_rgba(0,0,0,0.4)] rounded-full pointer-events-auto transition-all" style={{ background: 'var(--nav-bg)', border: '1px solid var(--nav-border)' }}>
+      <div className="fixed left-1/2 -translate-x-1/2 bottom-[max(0.75rem,env(safe-area-inset-bottom))] sm:bottom-6 z-[9999] pointer-events-none w-[calc(100%-1rem)] sm:w-full max-w-[460px] sm:max-w-[560px] flex justify-center px-0 sm:px-4 animate-fade-in">
+        <nav className="flex w-full sm:w-auto items-stretch justify-between sm:justify-center gap-1 sm:gap-2 p-1.5 sm:p-2 backdrop-blur-xl shadow-[0_20px_60px_-10px_rgba(0,0,0,0.4)] rounded-full pointer-events-auto transition-all" style={{ background: 'var(--nav-bg)', border: '1px solid var(--nav-border)' }}>
           {availableTabs.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.label;
@@ -1958,8 +2041,8 @@ function App() {
                 className="group flex flex-1 sm:flex-none min-w-0 items-center justify-center rounded-full px-2 py-3 sm:py-3 sm:px-5 text-sm font-semibold transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
                 style={{
                   background: isActive ? 'var(--nav-active)' : 'transparent',
-                  color: isActive ? '#000' : 'var(--text-secondary)',
-                  boxShadow: isActive ? '0 8px 25px rgba(45,224,143,0.3)' : 'none',
+                  color: isActive ? 'var(--nav-active-text)' : 'var(--text-secondary)',
+                  boxShadow: 'none',
                 }}
               >
                 <Icon className={`text-xl sm:text-lg transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`} />
@@ -2067,9 +2150,9 @@ function App() {
                 onClick={toggleTheme}
                 className="group grid h-11 w-11 place-items-center transition-all t-card rounded-full"
                 style={{ color: 'var(--text-secondary)' }}
-                title={`Switch to ${theme === 'default' ? 'Brutalist' : 'Default'} theme`}
+                title={`Switch to ${theme === 'default' ? 'Dark' : 'Light'} theme`}
               >
-                {theme === "default" ? <FiCode className="group-hover:rotate-180 transition-transform duration-500" /> : <FiSun className="group-hover:rotate-90 transition-transform duration-500" />}
+                {theme === "default" ? <FiMoon className="group-hover:rotate-180 transition-transform duration-500" /> : <FiSun className="group-hover:rotate-90 transition-transform duration-500" />}
               </button>
               <button className="grid h-11 w-11 place-items-center transition-all t-card rounded-full" style={{ color: 'var(--text-secondary)' }}>
                 <FiBell />
@@ -2156,6 +2239,10 @@ function App() {
                 </div>
               </div>
               <GalleryPanel items={state.gallery} />
+            </section>
+          ) : activeTab === "Team Portal" ? (
+            <section className="animate-fade-in flex-1 w-full" style={{ margin: "-12px -16px", width: "calc(100% + 32px)", maxWidth: "100vw" }}>
+              <TeamPortalPage />
             </section>
           ) : (
             <div className={`animate-fade-in ${editMode ? 'edit-mode' : ''}`}>

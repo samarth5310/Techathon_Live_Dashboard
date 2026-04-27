@@ -5,6 +5,7 @@ import { useMemo, memo } from "react";
 import { FiTrash2, FiPlus, FiChevronDown, FiChevronRight, FiUsers, FiTarget, FiCalendar, FiBarChart2, FiBell, FiImage, FiActivity, FiFileText, FiEdit3, FiCheck, FiHash, FiPlay, FiClock, FiGrid } from "react-icons/fi";
 import { db } from "../firebase";
 import type { Team, ScheduleItem, Announcement, GalleryItem, ActivityItem, StatDoc } from "../types";
+import AdminTeamPortal from "./AdminTeamPortal";
 
 // ---------- Theme-Aware Custom Select ----------
 const CustomSelect = ({ value, defaultValue, onChange, options, name }: { value?: string; defaultValue?: string; onChange?: (val: string) => void; options: { label: string; value: string }[], name?: string }) => {
@@ -80,7 +81,6 @@ export default function AdminControlsPage({
   const [uploadedBy, setUploadedBy] = useState("Admin Dashboard");
   const [scheduleForm, setScheduleForm] = useState({ title: "", time: "", status: "upcoming" as ScheduleItem["status"] });
   
-  const [teamForm, setTeamForm] = useState({ name: "", members: "", department: "" });
   const [panelMessage, setPanelMessage] = useState("");
   const [confirmDelete, setConfirmDelete] = useState<{ id?: string; ids?: string[]; collection: string; message: string } | null>(null);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
@@ -102,6 +102,7 @@ export default function AdminControlsPage({
   const adminTabs = [
     { label: "Stats", icon: FiBarChart2 },
     { label: "Teams", icon: FiUsers },
+    { label: "Team Portal", icon: FiUsers },
     { label: "Problem Statements", icon: FiFileText },
     { label: "Schedule", icon: FiCalendar },
     { label: "Announcements", icon: FiBell },
@@ -215,30 +216,16 @@ export default function AdminControlsPage({
     });
   };
 
-  // Team
-  const handleAddTeam = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const membersList = teamForm.members.split(",").map((m) => m.trim()).filter(Boolean);
-    await addDoc(collection(db, "teams"), {
-      name: teamForm.name,
-      members: membersList,
-      department: teamForm.department,
-      score: 0,
-      status: "ideation",
-      lastActive: serverTimestamp(),
-    });
-    setTeamForm({ name: "", members: "", department: "" });
-    showMessage("Team added successfully!");
-  };
+  // Team (Add/Delete are now handled in Team Portal page, but keeping scoring here)
   const handleDeleteTeam = (id: string, name: string) => {
-    setConfirmDelete({ id, collection: "teams", message: `Are you sure you want to delete ${name}?` });
+    setConfirmDelete({ id, collection: "teamPortal", message: `Are you sure you want to delete ${name}?` });
   };
   const handleUpdateScore = async (e: React.FormEvent, teamId: string, currentScore: number, teamName: string) => {
     e.preventDefault();
     const inputEl = (e.currentTarget as HTMLFormElement).elements.namedItem("pts") as HTMLInputElement;
     const addPoints = Number(inputEl.value);
     if (!addPoints && addPoints !== 0) return;
-    const teamRef = doc(db, "teams", teamId);
+    const teamRef = doc(db, "teamPortal", teamId);
     await updateDoc(teamRef, { score: currentScore + addPoints, lastActive: serverTimestamp() });
     await addDoc(collection(db, "activity"), {
       message: `Admin modified score for ${teamName} (${addPoints >= 0 ? '+' : ''}${addPoints} pts)`,
@@ -263,7 +250,7 @@ export default function AdminControlsPage({
   };
 
   const handleAssignStatement = async (teamId: string, statementTitle: string) => {
-    await updateDoc(doc(db, "teams", teamId), { problemStatement: statementTitle });
+    await updateDoc(doc(db, "teamPortal", teamId), { problemStatementTitle: statementTitle });
     showMessage(`Assigned "${statementTitle}" to team.`);
   };
 
@@ -391,13 +378,11 @@ export default function AdminControlsPage({
         {activeAdminTab === "Stats" && (
           <form className="max-w-2xl space-y-4" onSubmit={handleUpdateStats}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 sm:p-6 t-inset" style={{ borderRadius: 'var(--card-radius)' }}>
-              {Object.entries(statsForm).filter(([k]) => k !== "eventPhase").map(([key, val]) => (
-                <div key={key}>
-                  <label className="text-xs font-semibold uppercase block mb-1" style={{ color: 'var(--text-muted)' }}>{key}</label>
-                  <input type="number" required value={val as number} onChange={(e) => setStatsForm((prev) => ({ ...prev, [key]: Number(e.target.value) }))} className="w-full t-input p-3 text-sm" />
-                </div>
-              ))}
-              <div className="sm:col-span-2">
+              <div>
+                <label className="text-xs font-semibold uppercase block mb-1" style={{ color: 'var(--text-muted)' }}>Prize Pool (₹)</label>
+                <input type="number" required value={statsForm.prizePool} onChange={(e) => setStatsForm((prev) => ({ ...prev, prizePool: Number(e.target.value) }))} className="w-full t-input p-3 text-sm" />
+              </div>
+              <div>
                 <label className="text-xs font-semibold uppercase block mb-1" style={{ color: 'var(--text-muted)' }}>Event Phase Tracker</label>
                 <CustomSelect 
                   value={statsForm.eventPhase} 
@@ -409,6 +394,11 @@ export default function AdminControlsPage({
                     { label: "Valedictory", value: "valedictory" },
                   ]}
                 />
+              </div>
+              <div className="sm:col-span-2 mt-2 pt-4 border-t border-[var(--border-main)]">
+                <p className="text-xs italic" style={{ color: 'var(--text-muted)' }}>
+                  Note: Total Students, Total Teams, Active Teams, and Projects Submitted are now auto-calculated from the Team Portal data.
+                </p>
               </div>
             </div>
             <button type="submit" className="w-full font-semibold py-3 px-6 text-sm text-black transition" style={{ background: 'var(--accent-green)', borderRadius: 'var(--card-radius)' }}>
@@ -453,19 +443,10 @@ export default function AdminControlsPage({
 
         {/* ===== TEAMS TAB (Expandable with members) ===== */}
         {activeAdminTab === "Teams" && (
-          <div className="grid lg:grid-cols-2 gap-5 sm:gap-8">
-            <form className="space-y-4 p-4 sm:p-6 t-inset" style={{ borderRadius: 'var(--card-radius)' }} onSubmit={handleAddTeam}>
-              <SectionHeader icon={FiPlus} title="Register New Team" accentClass="icon-circle-green" />
-              <input required placeholder="Team Name" value={teamForm.name} onChange={(e) => setTeamForm((p) => ({ ...p, name: e.target.value }))} className="w-full t-input p-3 text-sm" />
-              <input required placeholder="Department" value={teamForm.department} onChange={(e) => setTeamForm((p) => ({ ...p, department: e.target.value }))} className="w-full t-input p-3 text-sm" />
-              <input required placeholder="Members (comma separated)" value={teamForm.members} onChange={(e) => setTeamForm((p) => ({ ...p, members: e.target.value }))} className="w-full t-input p-3 text-sm" />
-              <button type="submit" className="w-full font-semibold py-3 px-6 text-sm text-black transition" style={{ background: 'var(--accent-green)', borderRadius: 'var(--card-radius)' }}>
-                <FiPlus className="inline mr-2" />Add Team
-              </button>
-            </form>
+          <div className="grid grid-cols-1 gap-5 sm:gap-8">
             <div>
               <SectionHeader icon={FiUsers} title="Existing Teams" count={state.teams.length} accentClass="icon-circle-purple" />
-              <BulkActionBar collection="teams" items={state.teams} />
+              <BulkActionBar collection="teamPortal" items={state.teams} />
               <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
                 {state.teams.map((t) => (
                   <div key={t.id} className="transition select-none" style={{ background: selectedItems.has(t.id) ? 'var(--accent-green-dim)' : 'var(--bg-inset)', border: selectedItems.has(t.id) ? '2px solid var(--accent-green)' : '1px solid var(--border-main)', borderRadius: 'var(--card-radius)' }}>
@@ -521,6 +502,11 @@ export default function AdminControlsPage({
               </div>
             </div>
           </div>
+        )}
+
+        {/* ===== TEAM PORTAL TAB ===== */}
+        {activeAdminTab === "Team Portal" && (
+          <AdminTeamPortal showNotification={showNotification} />
         )}
 
         {/* ===== PROBLEM STATEMENTS TAB ===== */}

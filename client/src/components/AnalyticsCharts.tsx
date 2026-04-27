@@ -1,21 +1,20 @@
 import {
   Area,
   AreaChart,
-  Bar,
-  BarChart,
+  Pie,
+  PieChart,
+  Cell,
   CartesianGrid,
   Legend,
-  Line,
-  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
 
-export type DepartmentPoint = {
-  department: string;
-  participants: number;
+export type ProblemStatementPoint = {
+  name: string;
+  value: number;
 };
 
 export type StatusPoint = {
@@ -28,12 +27,21 @@ export type ScorePoint = {
   score: number;
 };
 
+const THEME_COLORS = [
+  'var(--accent-green)',
+  'var(--accent-purple)',
+  'var(--accent-blue)',
+  'var(--accent-orange)',
+  'var(--accent-cyan)',
+  'var(--accent-pink)'
+];
+
 export function AnalyticsCharts({
-  departmentData,
+  problemStatementData,
   statusData,
   scoreData,
 }: {
-  departmentData: DepartmentPoint[];
+  problemStatementData: ProblemStatementPoint[];
   statusData: StatusPoint[];
   scoreData: ScorePoint[];
 }) {
@@ -41,31 +49,38 @@ export function AnalyticsCharts({
     <section className="grid gap-4 xl:grid-cols-2 h-full">
       <article className="t-card p-5 min-w-0">
         <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
-          Participation by Department
+          Teams by Problem Statement
         </h3>
         <div className="h-56 w-full">
           <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-            <BarChart data={departmentData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
-              <XAxis dataKey="department" stroke="var(--text-muted)" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
-              <YAxis stroke="var(--text-muted)" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} allowDecimals={false} />
+            <PieChart>
+              <Pie
+                data={problemStatementData}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={80}
+                innerRadius={50}
+                stroke="var(--border-main)"
+                strokeWidth={2}
+                paddingAngle={2}
+              >
+                {problemStatementData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={THEME_COLORS[index % THEME_COLORS.length]} />
+                ))}
+              </Pie>
               <Tooltip
                 contentStyle={{
                   background: "var(--bg-card)",
                   border: "1px solid var(--border-main)",
-                  borderRadius: "10px",
+                  borderRadius: "var(--card-radius)",
                   color: "var(--text-primary)",
                 }}
-                labelStyle={{ color: 'var(--text-secondary)' }}
+                itemStyle={{ color: "var(--text-primary)", fontWeight: "bold" }}
               />
-              <defs>
-                <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--chart-bar-1)" stopOpacity={1} />
-                  <stop offset="100%" stopColor="var(--chart-bar-2)" stopOpacity={0.8} />
-                </linearGradient>
-              </defs>
-              <Bar dataKey="participants" fill="url(#barGrad)" radius={[6, 6, 0, 0]} />
-            </BarChart>
+              <Legend wrapperStyle={{ fontSize: '11px', color: 'var(--text-secondary)' }} />
+            </PieChart>
           </ResponsiveContainer>
         </div>
       </article>
