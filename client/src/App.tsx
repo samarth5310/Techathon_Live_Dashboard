@@ -1237,6 +1237,20 @@ function App() {
     }
   }, [isMobileView, projectorMode]);
 
+  const [hasActiveHelpRequests, setHasActiveHelpRequests] = useState(false);
+  const [showCredits, setShowCredits] = useState(true);
+
+  useEffect(() => {
+    const unsub = onSnapshot(
+      query(collection(db, "helpRequests")),
+      (snap) => {
+        const hasOpen = snap.docs.some(doc => doc.data().status === "open");
+        setHasActiveHelpRequests(hasOpen);
+      }
+    );
+    return () => unsub();
+  }, []);
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
@@ -2058,7 +2072,16 @@ function App() {
       <div className="mx-auto w-full max-w-full p-1 md:p-2 relative">
         <main className="t-surface p-3 sm:p-4 md:p-6 w-full">
           <header className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="relative w-full lg:max-w-xl">
+            <div className="flex items-center gap-3 w-full lg:w-auto">
+              <div className="grid h-10 w-10 place-items-center rounded-none border-2 shadow-[4px_4px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_rgba(255,255,255,1)]" style={{ background: 'var(--accent-green)', color: '#000', borderColor: 'var(--text-primary)' }}>
+                <FiTarget size={20} strokeWidth={3} />
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-widest" style={{ color: 'var(--text-primary)' }}>
+                TECHATHON_<span style={{ color: 'var(--accent-green)' }}>1.0</span>
+              </h1>
+            </div>
+
+            <div className="relative w-full lg:max-w-md xl:max-w-xl">
               <FiSearch className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
               <input
                 placeholder="Search teams, tracks, announcements"
@@ -2154,8 +2177,9 @@ function App() {
               >
                 {theme === "default" ? <FiMoon className="group-hover:rotate-180 transition-transform duration-500" /> : <FiSun className="group-hover:rotate-90 transition-transform duration-500" />}
               </button>
-              <button className="grid h-11 w-11 place-items-center transition-all t-card rounded-full" style={{ color: 'var(--text-secondary)' }}>
+              <button className="grid h-11 w-11 place-items-center transition-all t-card rounded-full relative" style={{ color: 'var(--text-secondary)' }}>
                 <FiBell />
+                {hasActiveHelpRequests && <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse border-2" style={{ borderColor: 'var(--bg-card)' }}></span>}
               </button>
               <button
                 type="button"
@@ -2395,6 +2419,18 @@ function App() {
         >
           {notification.type === 'success' ? <FiCheck size={20} strokeWidth={3} /> : <FiZap size={20} />}
           <span className="font-black uppercase tracking-widest text-xs sm:text-sm break-words">{notification.message}</span>
+        </div>
+      )}
+
+      {/* ============ CREDITS BADGE ============ */}
+      {showCredits && (
+        <div className="fixed bottom-4 right-4 z-[99999] flex items-center gap-2 t-card px-4 py-2 rounded-full animate-fade-in transition-all hover:-translate-y-1" style={{ background: 'var(--bg-card)' }}>
+          <a href="https://www.linkedin.com/in/samarth-k-632720275" target="_blank" rel="noopener noreferrer" className="text-[10px] font-black tracking-widest uppercase hover:underline" style={{ color: 'var(--text-primary)' }}>
+            Made By Samarth
+          </a>
+          <button onClick={() => setShowCredits(false)} className="ml-2 text-neutral-500 hover:text-red-500 transition-colors">
+            <FiX size={14} />
+          </button>
         </div>
       )}
     </div>
